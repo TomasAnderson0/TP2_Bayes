@@ -4,27 +4,23 @@ format: pdf
 editor: visual
 ---
 
-La estadistica bayesiana se usa para poder responder a diferentes situaciones en los que se desconoce los parametros que las afectan. Se usan dos fuentes de informacion para ello, lo que uno cree previamente al realizar un experimento, es decir, la informacion a *priori* y los resultados que obtiene al realizarlo, que se utiliza con la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribucion a *posteriori* del o los parametros. Pero para poder responder a dichas situaciones se debe poder sacar muestras de la distribucion a *posteriori*. Para realizar esto, una de las tecnicas que se pueden utilizar es Metropolis-Hasting.
+La estadística bayesiana se usa para poder responder a diferentes situaciones en las que se desconoce los parámetros que las afectan. Se usan dos fuentes de información para ello, lo que uno cree previamente al realizar un experimento, es decir, la información a *priori* y los resultados que obtiene al realizarlo, que se utiliza con la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder responder a dichas situaciones se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hasting.
 
 ## Metropolis-Hasting
 
-Este metodo es una cadena de Marcov que consiste, a grandes rasgos, en visitar a los distintos valores de una distribucion de probabilidad generando un secuencia de valores posibles $x$ de dicha distribucion $x(1),x(2),…,x(S)$, que en general para obtener $x(i+1)$ usamos $x(i)$.
+Este método es una cadena de Markov que consiste, a grandes rasgos, en visitar a los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$, que en general para obtener $x(i+1)$ usamos $x(i)$.
 
-Esta tecnica funciona de la siguiente manera:
+Esta técnica funciona de la siguiente manera:
 
 1.  En la iteración i estamos en el valor $x(i)$
 2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo q la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
         -   $α_{θ→θ′} = min(1,f(x′)f(x))$
-    ii. Pasar a $x′$ con probabilidad $α_{x→x′}$: 
-    
-```{=tex}
+    ii. Pasar a $x′$ con probabilidad $α_{x→x′}$:
 
 $x^{(i+1)} =
-\begin{cases} 
+\begin{cases}
 x' \text{ con probabilidad } α_{θ→θ′}\\
 x \text{  con probabilidad } α_{θ→θ′}
 \end{cases}$
-
-```

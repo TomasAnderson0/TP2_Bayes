@@ -4,27 +4,30 @@ format: pdf
 editor: visual
 ---
 
-La estadistica bayesiana se usa para poder responder a diferentes situaciones en los que se desconoce los parametros que las afectan. Se usan dos fuentes de informacion para ello, lo que uno cree previamente al realizar un experimento, es decir, la informacion a *priori* y los resultados que obtiene al realizarlo, que se utiliza con la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribucion a *posteriori* del o los parametros. Pero para poder responder a dichas situaciones se debe poder sacar muestras de la distribucion a *posteriori*. Para realizar esto, una de las tecnicas que se pueden utilizar es Metropolis-Hasting.
+La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones. Se usan dos fuentes de información para ello. La primera es lo que uno cree conocer sobre los parámetros previamente al realizar un experimento, es decir, la información a *priori*, y la segunda, los resultados que se obtienen al realizarlo, que se lo denomina como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hasting.
 
 ## Metropolis-Hasting
 
-Este metodo es una cadena de Marcov que consiste, a grandes rasgos, en visitar a los distintos valores de una distribucion de probabilidad generando un secuencia de valores posibles $x$ de dicha distribucion $x(1),x(2),…,x(S)$, que en general para obtener $x(i+1)$ usamos $x(i)$.
+Este método es en una cadena de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
-Esta tecnica funciona de la siguiente manera:
+Esta técnica funciona de la siguiente manera:
 
 1.  En la iteración i estamos en el valor $x(i)$
 2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo q la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
-        -   $α_{θ→θ′} = min(1,f(x′)f(x))$
+        - $α_{θ→θ′} = min(1,f(x′)f(x))$
+
     ii. Saltar a $x′$ con probabilidad $α_{x→x′}$: 
+
 
 \begin{center}
 $x^{(i+1)} =
-\begin{cases} 
+\begin{cases}
 x' \text{ con probabilidad } α_{θ→θ′}\\
 x \text{  con probabilidad } α_{θ→θ′}
 \end{cases}$
+
 \end{center}
 
 La función para utilizar el metodo es la siguiente:
@@ -114,13 +117,49 @@ p_gen_1d = function(result, p_actual, p_nuevo) {
 
 # Aplicación de Metropolis-Hasting en una dimensión
 
+```{r, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+source("Funciones.R")
+library(ggplot2)
+library(mvtnorm)
+```
+
+
+
+
 ## Distribución de Kumaraswamy
 
-La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matematica resulta ser de computo mas sencillo. 
+La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matematica resulta ser de computo mas sencillo. Dicha función es:
 
 \begin{center}
 $\begin{array}{lr}
 p(x \mid a, b) = a b x ^ {a - 1} (1 - x ^ a)^{b - 1} & \text{con } a, b > 0
 \end{array}$
 \end{center}
+
+```{r}
+kumaraswamy = function(a,b,x) {
+  stopifnot(a > 0)
+  stopifnot(b > 0)
+  valor = a*b*(x^(a-1))*((1-(x^a))^(b-1))
+  return(valor)
+}
+
+grilla = seq(0,1,.01)
+
+parametros = matrix(c(2,2,10,2,5,15,2,15,1/2,1/3), nrow = 5, ncol = 2, byrow = T)
+
+Valores = matrix(0,nrow = 101, ncol = 5)
+for (i in 1:5) {
+  Valores[,i] = kumaraswamy(parametros[i,1],parametros[i,2],grilla)
+}
+
+data_kuma = as.data.frame(Valores)
+
+ggplot(data_kuma)+geom_line(aes(x = grilla, y = V1), color = "red")+
+  geom_line(aes(x = grilla, y = V2), color = "yellow3")+
+  geom_line(aes(x = grilla, y = V3), color = "blue")+
+  geom_line(aes(x = grilla, y = V4), color = "green")+
+  geom_line(aes(x = grilla, y = V5), color = "brown")
+```
+
 

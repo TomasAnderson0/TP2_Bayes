@@ -17,14 +17,110 @@ Esta tecnica funciona de la siguiente manera:
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
         -   $α_{θ→θ′} = min(1,f(x′)f(x))$
-    ii. Pasar a $x′$ con probabilidad $α_{x→x′}$: 
-    
-```{=tex}
+    ii. Saltar a $x′$ con probabilidad $α_{x→x′}$: 
 
+\begin{center}
 $x^{(i+1)} =
 \begin{cases} 
 x' \text{ con probabilidad } α_{θ→θ′}\\
 x \text{  con probabilidad } α_{θ→θ′}
 \end{cases}$
+\end{center}
 
+La función para utilizar el metodo es la siguiente:
+
+```{r, eval=FALSE}
+# n: Tamaño de la cadena que se quiere generar
+
+# p_inicial: Primer punto con el que se inicial la cadena. Es igual a 0 por defecto.
+
+# v_random: Utilizar si se quiere empezar la cadena con un punto aleatorio. Introducir un vector de dos numeros para obtener un numero aleatoria entre ellos dos.
+
+# d_objetivo: Función que calcule la densidad de la función que se quiere muestrear.
+
+# r_propuesta: Función que genera un punto de la distribución de salto con la media sin especificar. Por defecto, se utiliza una normal estandar.
+
+# d_propuesta: Función que devuelve la densidad en un punto de la distribución de salto con la media sin especificar. Por defecto, se utiliza una normal estandar.
+
+sample_mh_1d = function(n, p_inicial = 0, d_objetivo, r_propuesta = rnorm, d_propuesta = dnorm, v_random = NA){
+  stopifnot(n > 0)
+  muestras = numeric(n)
+  #Seleccion del primer valor de la cadena
+  if (length(v_random) == 2){
+    muestras[1] = runif(1,min(v_random),max(v_random))
+  } else {
+    muestras[1] = p_inicial
+  }
+  #Generación de todos los n-1 puntos siguientes de la cadena
+  for (i in 2:n) {
+    #Proposición del nuevo valor
+    puntos = valor_salto_1d(muestras, r_propuesta, i)
+    p_actual = puntos[1]
+    p_nuevo = puntos[2]
+    
+    #Calculo de la probabilidad de salto
+    prob = salto_1d(p_actual, p_nuevo, d_objetivo, d_propuesta)
+    
+    #Saltamos?
+    salto = test_salto_1d(prob)
+    
+    #Salto
+    muestras[i] = p_gen_1d(salto, p_actual, p_nuevo)
+  }
+    return(muestras)
+}
+
+#Donde las funciones utilizadas son:
+
+#Proposición del nuevo valor
+
+valor_salto_1d = function(muestras, r_propuesta, i){
+  p_actual = muestras[i-1]
+  p_nuevo = r_propuesta(p_actual)
+  puntos = c(p_actual, p_nuevo)
+  return(puntos)
+}
+
+#Calculo de la probabilidad de salto
+
+salto_1d = function(p_actual, p_nuevo, d_objetivo, d_propuesta) {
+  f_nuevo = d_objetivo(p_nuevo)
+  f_actual = d_objetivo(p_actual)
+  q_actual = d_propuesta(p_actual, p_nuevo)
+  q_nuevo = d_propuesta(p_nuevo, p_actual)
+  prob = (f_nuevo*q_actual) / (q_nuevo*f_actual)
+  alfa = min(1, prob)
+  return(alfa)
+}
+
+#Saltamos?
+
+test_salto_1d = function(alfa){
+  result = rbinom(1,1,alfa)
+  return(result)
+}
+
+#Salto
+
+p_gen_1d = function(result, p_actual, p_nuevo) {
+  if (result){
+    return(p_nuevo)
+  } else {
+    return(p_actual)
+  }
+}
 ```
+
+
+# Aplicación de Metropolis-Hasting en una dimensión
+
+## Distribución de Kumaraswamy
+
+La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matematica resulta ser de computo mas sencillo. 
+
+\begin{center}
+$\begin{array}{lr}
+p(x \mid a, b) = a b x ^ {a - 1} (1 - x ^ a)^{b - 1} & \text{con } a, b > 0
+\end{array}$
+\end{center}
+

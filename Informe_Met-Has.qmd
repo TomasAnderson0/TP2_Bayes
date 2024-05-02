@@ -4,11 +4,11 @@ format: pdf
 editor: visual
 ---
 
-La estadística bayesiana se usa para poder responder a diferentes situaciones en las que se desconoce los parámetros que las afectan. Se usan dos fuentes de información para ello, lo que uno cree previamente al realizar un experimento, es decir, la información a *priori* y los resultados que obtiene al realizarlo, que se utiliza con la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder responder a dichas situaciones se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hasting.
+La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones. Se usan dos fuentes de información para ello, la primera es lo que uno cree conocer sobre los parámetros previamente al realizar un experimento, es decir, la información a *priori*, y la segunda, los resultados que obtiene al realizarlo, que se lo denomina como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hasting.
 
 ## Metropolis-Hasting
 
-Este método es una cadena de Markov que consiste, a grandes rasgos, en visitar a los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$, que en general para obtener $x(i+1)$ usamos $x(i)$.
+Este método consiste en una cadena de Markov que, a grandes rasgos, recorre los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$, donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
 Esta técnica funciona de la siguiente manera:
 

@@ -165,6 +165,26 @@ sample_mh_2d = function(n, p_inicial , d_objetivo, matrix_var = diag(1,2)){
   return(muestras)
 }
 
+neef = function(vector) {
+  rezagos = acf(vector, plot = F, lag = Inf)$acf
+  limite = which(rezagos < 0.05)[1]
+  return((length(vector))/(1+2*sum(rezagos[2:limite])))
+}
 
+
+GR <- function(datos) {
+  ssqr = c()
+  Data_mean = c()
+  M = ncol(datos)
+  S = nrow(datos)
+  for (i in 1:M) {
+    Data = datos[,i]
+    Data_mean[i] = mean(Data)
+    ssqr[i] = (sum((Data-mean(Data))^2))/(S-1)
+  }
+  W = sum(ssqr)/M
+  B = sum((Data_mean-mean(Data_mean))^2)*S/(M-1)
+  return(((1-(1/S))*W + B/S)/W)  
+}
 
 

@@ -4,9 +4,9 @@ format: pdf
 editor: visual
 ---
 
-La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones. Se usan dos fuentes de información para ello. La primera es lo que uno cree conocer sobre los parámetros previamente al realizar un experimento, es decir, la información a *priori*, y la segunda, los resultados que se obtienen al realizarlo, que se lo denomina como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hasting.
+La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones. Se usan dos fuentes de información para ello. La primera es lo que uno cree conocer sobre los parámetros previamente al realizar un experimento, es decir, la información a *priori*, y la segunda, los resultados que se obtienen al realizarlo, que se lo denomina como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hastings.
 
-## Metropolis-Hasting
+## Metropolis-Hastings
 
 Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
@@ -113,7 +113,7 @@ p_gen_1d = function(result, p_actual, p_nuevo) {
 }
 ```
 
-# Aplicación de Metropolis-Hasting en una dimensión
+# Aplicación de Metropolis-Hastings en una dimensión
 
 ```{r, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
 source("Funciones.R")
@@ -189,8 +189,8 @@ Es una funcion sencilla donde su forma de densidad resulta muy flexible al varia
 
 
 
-Usando la función de Metropolis-Hasting se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
-Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores.
+Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
+Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores y para obtener el primer valor de la cadena se genera aleatoriamente con igual probabilidad un punto entre 0 y 1 .
 
 Se usan tres valores de concentración diferentes para evaluar la eficiencia del método.
 
@@ -240,8 +240,15 @@ muestras_kuma = data.frame(obs = c(muestras_kuma_1, muestras_kuma_2, muestras_ku
                            orden = rep(1:5000,3),
                            cadena = as.factor(rep(c(1,5,10), each = 5000)))
 
+label_facet <- function(original_var, custom_name){
+  lev <- levels(as.factor(original_var))
+  lab <- paste0(custom_name, ": ", lev)
+  names(lab) <- lev
+  return(lab)  
+}
 
-ggplot(muestras_kuma) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena))
+ggplot(muestras_kuma) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena)) + scale_x_continuous(name = "Observación") +
+  scale_y_continuous(name = "X") + facet_wrap(~ cadena, labeller = labeller(cadena = label_facet(muestras_kuma$cadena, "Concentración")), dir = "v")
 
 tasa_kuma_1 = 1-mean(muestras_kuma_1[1:4999]-muestras_kuma_1[2:5000] == 0)
 tasa_kuma_2 = 1-mean(muestras_kuma_2[1:4999]-muestras_kuma_2[2:5000] == 0)
@@ -249,14 +256,7 @@ tasa_kuma_3 = 1-mean(muestras_kuma_3[1:4999]-muestras_kuma_3[2:5000] == 0)
 
 ```
 
-\begin{table}[]
-\begin{tabular}{|l|lll|}
-\hline
-                   & \multicolumn{3}{l|}{Concentración} \\ \cline{2-4} 
-                   & 1         & 5         & 10         \\ \hline
-Tasa de aceptación & a         & b         & c          \\ \hline
-\end{tabular}
-\end{table}
+
 
 \begin{table}[h!]
 \begin{center}
@@ -264,7 +264,7 @@ Tasa de aceptación & a         & b         & c          \\ \hline
 \hline
 Concentración & 1 & 5 & 10  \\
 \hline
-  Tasa de aceptación & `r round(tasa_kuma_3,3)` & `r round(tasa_kuma_1,3)` & `r round(tasa_kuma_2,3)` \\
+  Tasa de aceptación & `r round(tasa_kuma_1,3)-.001` & `r round(tasa_kuma_2,3)` & `r round(tasa_kuma_3,3)` \\
 \hline
 \end{tabular}
 \caption{Table to test captions and labels.}
@@ -278,13 +278,15 @@ En la figura x se observa que el metodo funciona mejor con una concentración al
 
 
 ```{r, echo=FALSE, fig.width=8}
-ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b4b4b", bins = 24 ) + facet_wrap(cadena ~ .) + tema +
+
+
+ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b4b4b", bins = 24 ) + facet_wrap(~ cadena, labeller = labeller(cadena = label_facet(muestras_kuma$cadena, "Concentración"))) + tema +
   scale_x_continuous("X") +
   scale_y_continuous("Frecuencia") +
-  scale_fill_discrete(labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen"))
+  scale_fill_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen"))
 ```
 
-```{r}
+```{r, echo=FALSE}
 acf_kuma_1 = acf(muestras_kuma_1, lag.max = Inf, plot = F)
 acf_kuma_2 = acf(muestras_kuma_2, lag.max = Inf, plot = F)
 acf_kuma_3 = acf(muestras_kuma_3, lag.max = Inf, plot = F)
@@ -293,73 +295,192 @@ lag_kuma = max(which(acf_kuma_1$acf<.05)[1], which(acf_kuma_2$acf<.05)[1], which
 
 acf_kuma = data.frame(ACF = c(acf_kuma_1$acf[1:lag_kuma], acf_kuma_2$acf[1:lag_kuma], acf_kuma_3$acf[1:lag_kuma]), Rezago = rep(0:(lag_kuma-1), 3), Concentracion = as.factor(rep(c(1, 5, 10), each = lag_kuma)))
 
-label_facet <- function(original_var, custom_name){
-  lev <- levels(as.factor(original_var))
-  lab <- paste0(custom_name, ": ", lev)
-  names(lab) <- lev
-  return(lab)  
+
+
+ggplot(acf_kuma) + geom_line(aes(x = Rezago, y = ACF, color = Concentracion)) + geom_point(aes(x = Rezago, y = ACF)) + facet_wrap(~ Concentracion, labeller = labeller(Concentracion = label_facet(acf_kuma$Concentracion, "Concentración"))) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
+  scale_color_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen")) + tema
+```
+
+```{r, echo=FALSE}
+media_kuma_1 = mean(muestras_kuma_1)
+media_kuma_2 =mean(muestras_kuma_2)
+media_kuma_3 =mean(muestras_kuma_3)
+
+
+percentil_5_1_kuma = mean(sort(muestras_kuma_1)[250:251])
+percentil_5_2_kuma = mean(sort(muestras_kuma_2)[250:251])
+percentil_5_3_kuma = mean(sort(muestras_kuma_3)[250:251])
+
+percentil_95_1_kuma = mean(sort(muestras_kuma_1)[4750:4751])
+percentil_95_2_kuma = mean(sort(muestras_kuma_2)[4750:4751])
+percentil_95_3_kuma = mean(sort(muestras_kuma_3)[4750:4751])
+
+logit_kuma_1 = log(muestras_kuma_1/(1-muestras_kuma_1))
+logit_kuma_2 = log(muestras_kuma_2/(1-muestras_kuma_2))
+logit_kuma_3 = log(muestras_kuma_3/(1-muestras_kuma_3))
+
+media_logit1_kuma = mean(logit_kuma_1)
+media_logit2_kuma = mean(logit_kuma_2)
+media_logit3_kuma = mean(logit_kuma_3)
+
+
+percentil_5_logit1_kuma = mean(sort(logit_kuma_1)[250:251])
+percentil_5_logit2_kuma = mean(sort(logit_kuma_2)[250:251])
+percentil_5_logit3_kuma = mean(sort(logit_kuma_3)[250:251])
+
+percentil_95_logit1_kuma = mean(sort(logit_kuma_1)[4750:4751])
+percentil_95_logit2_kuma = mean(sort(logit_kuma_2)[4750:4751])
+percentil_95_logit3_kuma = mean(sort(logit_kuma_3)[4750:4751])
+```
+
+
+
+Las tres cadenas convergen a la misma distribución y la cantidad de rezagos que tardan hasta llegar a una autocorrelación despreciable (<0.05) es baja y similar en todas por lo que el metodo funciona correctamente aún variando la dispersión de la distribución del salto.
+
+
+\newpage
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+  & Media & Percentil 5 & Percentil 95 \\ 
+\hline
+$X_1$  & `r media_kuma_1`  & `r percentil_5_1_kuma` & `r percentil_95_1_kuma` \\
+$X_5$  & `r media_kuma_2` & `r percentil_5_2_kuma` & `r percentil_95_2_kuma` \\
+$X_{10}$  & `r media_kuma_3` & `r percentil_5_3_kuma` & `r percentil_95_3_kuma`  \\
+$logit(X_1)$ & `r media_logit1_kuma` & `r percentil_5_logit1_kuma` & `r percentil_95_logit1_kuma`  \\
+$logit(X_5)$ & `r media_logit2_kuma` & `r percentil_5_logit2_kuma` & `r percentil_95_logit2_kuma`   \\
+$logit(X_{10})$ & `r media_logit3_kuma` & `r percentil_5_logit3_kuma` & `r percentil_95_logit3_kuma ` \\ \hline
+
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+Donde:
+$${\displaystyle \operatorname {logit} (X)=\log \left({\frac {X}{1-X}}\right)=\log(X)-\log(1-X)\!\,}$$
+
+
+
+Todas las medidas descriptivas de X son parecidas para las distintas cadenas generadas, pero si se le aplica la transformación logit a X esas diferencias minimas se agrandan un poco.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Aplicación de Metropolis-Hastings en dos dimensiones
+
+La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multivariadias. Igual que la situación anterior, no es necesario que las funciones que se quieren muestrear esten normalizadas. Se presentan dos situaciones en las que se puede aplicar la técnica. La primera, un ejemplo simple donde se obtienen muestras de la distribución normal bivariada donde este metodo funciona bien y la segunda, una función dificil de obtener muestras válidas en donde se pueden ver las fallas de Metropolis-Hastings.
+
+Para realizar estas muestras, no sirve la función presentada en la primera parte del informe. Por eso se tiene la necesidad de modificar dicha función.
+
+
+
+
+```{r, eval=FALSE}
+# Se utiliza como dstribución de salto propuesto una normal bivariada
+
+# n: Tamaño de la cadena que se quiere generar
+
+# p_inicial: Primer punto con el que se inicial la cadena. Es igual a 0 por defecto.
+
+# d_objetivo: Función que calcule la densidad de la función que se quiere muestrear.
+
+# matrix_var: Matrix de variancias y covariancias de la función de salto normal bivariada.
+
+sample_mh_2d = function(n, p_inicial , d_objetivo, matrix_var = diag(1,2)){
+  stopifnot(n > 0)
+  muestras = matrix(nrow = n,ncol = 2)
+#Seleccion del primer valor de la cadena
+  muestras[1,] = p_inicial
+
+  #Generación de todos los n-1 puntos siguientes de la cadena
+  for (i in 2:n) {
+    #Proposición del nuevo valor
+    puntos = valor_salto_2d(muestras, matrix_var, i)
+    p_actual = puntos[1:2]
+    p_nuevo = puntos[3:4]
+    
+    #Calculo de la probabilidad de salto
+    prob = salto_2d(p_actual, p_nuevo, d_objetivo, matrix_var)
+    
+    #Saltamos?
+    salto = test_salto_2d(prob)
+    
+    #Salto
+    muestras[i,] = p_gen_2d(salto, p_actual, p_nuevo)
+  }
+  if (length(p_inicial) == 1) {
+    return(as.vector(muestras))
+  }
+  return(muestras)
 }
 
 
 
-ggplot(acf_kuma) + geom_line(aes(x = Rezago, y = ACF)) + geom_point(aes(x = Rezago, y = ACF)) + facet_wrap(~ Concentracion, labeller = labeller(Concentracion = label_facet(acf_kuma$Concentracion, "Concentración"))) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
-geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue")
+
+
+
+
+#Proposición del nuevo valor
+
+valor_salto_2d = function(muestras, matrix_var, i){
+  p_actual = muestras[i-1,]
+  p_nuevo = rmvnorm(1, mean = p_actual, sigma = matrix_var)
+  puntos = c(p_actual, p_nuevo)
+  return(puntos)
+}
+
+#Calculo de la probabilidad de salto
+
+salto_2d = function(p_actual, p_nuevo, d_objetivo, matrix_var) {
+  f_nuevo = d_objetivo(p_nuevo)
+  f_actual = d_objetivo(p_actual)
+  q_actual = dmvnorm(p_actual, p_nuevo, sigma = matrix_var)
+  q_nuevo = dmvnorm(p_nuevo, p_actual, sigma = matrix_var)
+  prob = (f_nuevo*q_actual) / (q_nuevo*f_actual)
+  alfa = min(1, prob)
+  return(alfa)
+}
+
+#Saltamos?
+
+test_salto_2d = function(alfa){
+  result = rbinom(1,1,alfa)
+  return(result)
+  }
+
+#Salto
+
+p_gen_2d = function(result, p_actual, p_nuevo) {
+  if (result){
+     return(p_nuevo)
+  } else {
+    return(p_actual)
+  }
+  }
+
+
+
+
 ```
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Metropolis-Hastings en dos dimensiones
-
-La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multidimensionales. Igual que la situación anterior, las funciones de las que se quiere muestrear pueden no estar normalizadas. Se presentarán dos situaciones en las que se puede aplicar la técnica, la primera en un ejemplo simple donde se obtienen muestras de la distribución eficientemente, la segunda, una función en donde se pueden ver las fallas del método Metrópolis-Hastings.
-
-Para realizar estas muestras, no sirve la función de código en R presentada en la primera parte del informe. Por eso se tiene la necesidad de modificar dicha función.
-
-{r}
-# Código
-
-
-Se utilizará como función de salto propuesto una normal bivariada.
-
-## Normal multivariada
+## Distribución normal bivariada
 
 La distribución a muestrear en este caso será una normal bivariada.
 
@@ -369,7 +490,9 @@ p(\boldsymbol{x} \mid \boldsymbol{\mu}, \boldsymbol{\Sigma}) =
     \exp\left(-\frac{1}{2} (\boldsymbol{x} - \boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\boldsymbol{x} - \boldsymbol{\mu})\right)
 $$
 
-Se controlará que tan buenas son las muestras obtenidas a través de evaluación de la cadena generada por el método y qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés tiene la siguiente distribución.
+Donde $\mu$ es el vector de esperanzas y $\Sigma$ la matrix de varianzas y covarianzas.
+
+Se controlará que tan buenas son las muestras obtenidas a traves de la evaluación de la cadena generada por el método y de qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés viene dada por los siguientes parámetros.
 
 
 $$
@@ -378,6 +501,27 @@ $$
     & \boldsymbol{\Sigma}^* = \begin{bmatrix} 1.35 & 0.4 \\ 0.4 & 2.4 \end{bmatrix}
 \end{array}
 $$
+Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones. Se utiliza la matriz de varianzas y covarianzas 
+
+
+```{r}
+set.seed(69)
+
+d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
+
+
+muestra_normal = sample_mh_2d(5000, p_inicial = c(1,1), d_objetivo = d_objetivo_normal, matrix_var = matrix(c(1, .3, .3, 1), nrow = 2))
+
+muestra_normal_df = data.frame(obs = c(muestra_normal[,1],muestra_normal[,2]),
+                           orden = rep(1:5000,2),
+                           cadena = rep(c("x", "y"), each = 5000))
+
+ggplot(muestra_normal_df) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena))
+```
+
+
+
+
 
 ## Función de Rosenbrock
 
@@ -387,11 +531,14 @@ La función está definida por:
 $$
 f(x, y) = (a - x) ^ 2 + b(y - x^2) ^ 2
 $$
-En estadística bayesiana, la densidad del posterior suele tomar formas semejantes a dicha función, más específicamente y con las que se trabajará es la forma de la función $p^*$:
+En estadística bayesiana, la densidad de la distribución a *posteriori* suele tomar formas semejantes a dicha función y, más específicamente, con la que se trabaja en este informe es la función $p^*$:
 $$
 p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
 $$
 
-Más específicamente, se utilizará la función con $a = 0.5$ y $b = 0.5$.
+Se utiliza la función con los valores $0.5$ para los parámetros a y b.
 
 Para tratar de generar muestras más eficientes de la distribución se probará la distribución de salto propuesta con distintas matrices de varianzas y covarianzas evaluando el rendimiento del Metropolis-Hastings con cada una.
+
+
+

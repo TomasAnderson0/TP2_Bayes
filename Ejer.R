@@ -131,21 +131,31 @@ mean(sort(logit_kuma_2)[4750:4751])
 mean(sort(logit_kuma_3)[4750:4751])
 
 #Ejer 7
-
+set.seed(69)
 d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
 
 
-muestra_normal = sample_mh_2d(1000, p_inicial = c(1,1), d_objetivo = d_objetivo_normal,
-                              matrix_var = matrix(c(1, .3, .3, 1), nrow = 2))
+muestra_normal = sample_mh_2d(5000, p_inicial = c(1,1), d_objetivo = d_objetivo_normal,
+                              matrix_var = matrix(c(1.5, .4, .4, 2.4), nrow = 2))
 
 muestra_normal_df = data.frame(obs = c(muestra_normal[,1],muestra_normal[,2]),
-                           orden = rep(1:1000,2),
-                           cadena = rep(c("x", "y"), each = 1000))
+                           orden = rep(1:5000,2),
+                           cadena = rep(c("x", "y"), each = 5000))
 
 ggplot(muestra_normal_df) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena))
 
 
-apply(muestra_normal, 2, FUN = neef)
+nef = apply(muestra_normal, 2, FUN = neef)
+
+
+
+
+
+
+
+
+
+
 
 
 #Ejer 8

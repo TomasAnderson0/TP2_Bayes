@@ -8,28 +8,27 @@ La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobr
 
 ## Metropolis-Hasting
 
-Este método es en una cadena de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
+Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
 Esta técnica funciona de la siguiente manera:
 
 1.  En la iteración i estamos en el valor $x(i)$
-2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo q la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
+2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo $q$ la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
-        - $α_{θ→θ′} = min(1,f(x′)f(x))$
+        -   $α_{x→x′} = min(1,f(x′)f(x))$
+    ii. Saltar a $x′$ con probabilidad $α_{x→x′}$:
 
-    ii. Saltar a $x′$ con probabilidad $α_{x→x′}$: 
-
-
+```{=tex}
 \begin{center}
 $x^{(i+1)} =
 \begin{cases}
-x' \text{ con probabilidad } α_{θ→θ′}\\
-x \text{  con probabilidad } α_{θ→θ′}
+x' \text{ con probabilidad } α_{x→x′}\\
+x \text{  con probabilidad } α_{x→x′}
 \end{cases}$
 
 \end{center}
-
+```
 La función para utilizar el metodo es la siguiente:
 
 ```{r, eval=FALSE}
@@ -114,21 +113,21 @@ p_gen_1d = function(result, p_actual, p_nuevo) {
 }
 ```
 
-
 # Aplicación de Metropolis-Hasting en una dimensión
 
 ```{r, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
 source("Funciones.R")
 library(ggplot2)
 library(mvtnorm)
+tema = theme(panel.grid = element_line(color = "lightgrey"),
+             panel.background = element_rect(fill = "#f8f8f8"),
+             axis.line = element_line(color = "black"))
 ```
-
-
-
 
 ## Distribución de Kumaraswamy
 
 La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matematica resulta ser de computo mas sencillo. Dicha función es:
+
 
 \begin{center}
 $\begin{array}{lr}
@@ -136,7 +135,29 @@ p(x \mid a, b) = a b x ^ {a - 1} (1 - x ^ a)^{b - 1} & \text{con } a, b > 0
 \end{array}$
 \end{center}
 
-```{r}
+Para observar que forma tiene, se grafica su funcion de densidad para 5 valores de a y b.
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{ |c| c c c c c| }
+\hline
+\multicolumn{6}{|c|}{Valores} \\
+\hline
+ & Curva 1 & Curva 2 & Curva 3 & Curva 4 & Curva 5 \\
+\hline
+  a & 2 & 10 & 5 & 2 & 0.5 \\
+\hline
+  b & 2 & 2 & 15 & 15 & 0.33 \\
+\hline
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+
+
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
 kumaraswamy = function(a,b,x) {
   stopifnot(a > 0)
   stopifnot(b > 0)
@@ -153,13 +174,221 @@ for (i in 1:5) {
   Valores[,i] = kumaraswamy(parametros[i,1],parametros[i,2],grilla)
 }
 
-data_kuma = as.data.frame(Valores)
+Val = c(Valores[,1], Valores[,2], Valores[,3], Valores[,4], Valores[,5]) 
 
-ggplot(data_kuma)+geom_line(aes(x = grilla, y = V1), color = "red")+
-  geom_line(aes(x = grilla, y = V2), color = "yellow3")+
-  geom_line(aes(x = grilla, y = V3), color = "blue")+
-  geom_line(aes(x = grilla, y = V4), color = "green")+
-  geom_line(aes(x = grilla, y = V5), color = "brown")
+data_kuma = data.frame(x = rep(grilla, 5), y = Val, color = as.factor(rep(1:5, each = 101)))
+
+ggplot(data_kuma) + geom_line(aes(x = x, y = y, color = color)) + scale_color_discrete(labels = c("Curva 1", "Curva 2", "Curva 3", "Curva 4", "Curva 5"), type = c("red", "yellow3", "blue", "green", "brown"), name = "") + tema +
+  scale_y_continuous(name = "Densidad") +
+  scale_x_continuous(name = "X")
+```
+
+Es una funcion sencilla donde su forma de densidad resulta muy flexible al variar a y b por lo que se puede usar facilmente para la representacion de la probabilidad a *priori* de parametros que esten entre 0 y 1.
+
+
+
+
+
+Usando la función de Metropolis-Hasting se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
+Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores.
+
+Se usan tres valores de concentración diferentes para evaluar la eficiencia del método.
+
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+r_beta_by_mean = function(n, media, con){
+  alfa = media * con
+  beta = con - alfa
+  rbeta(n, alfa, beta)
+}
+
+d_beta_by_mean = function(x, media, con){
+  alfa = media * con
+  beta = con - alfa
+  dbeta(x, alfa, beta)
+}
+set.seed(69)
+
+d_objetivo_kuma = function(x) kumaraswamy(6, 2, x)
+
+r_propuesta_kuma_2 = function(x) r_beta_by_mean(1, x, 5)
+
+d_propuesta_kuma_2 = function(x, media) d_beta_by_mean(x, media, 5)
+
+muestras_kuma_2 = sample_mh_1d(5000, v_random = c(0,1), d_objetivo = d_objetivo_kuma, 
+                             d_propuesta = d_propuesta_kuma_2, 
+                             r_propuesta = r_propuesta_kuma_2)
+
+r_propuesta_kuma_3 = function(x) r_beta_by_mean(1, x, 10)
+
+d_propuesta_kuma_3 = function(x, media) d_beta_by_mean(x, media, 10)
+
+muestras_kuma_3 = sample_mh_1d(5000, v_random = c(0,1), d_objetivo = d_objetivo_kuma, 
+                               d_propuesta = d_propuesta_kuma_3, 
+                               r_propuesta = r_propuesta_kuma_3)
+
+r_propuesta_kuma_1 = function(x) r_beta_by_mean(1, x, 1)
+
+d_propuesta_kuma_1 = function(x, media) d_beta_by_mean(x, media, 1)
+
+muestras_kuma_1 = sample_mh_1d(5000, v_random = c(0,1), d_objetivo = d_objetivo_kuma, 
+                               d_propuesta = d_propuesta_kuma_1, 
+                               r_propuesta = r_propuesta_kuma_1)
+
+
+
+muestras_kuma = data.frame(obs = c(muestras_kuma_1, muestras_kuma_2, muestras_kuma_3),
+                           orden = rep(1:5000,3),
+                           cadena = as.factor(rep(c(1,5,10), each = 5000)))
+
+
+ggplot(muestras_kuma) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena))
+
+tasa_kuma_1 = 1-mean(muestras_kuma_1[1:4999]-muestras_kuma_1[2:5000] == 0)
+tasa_kuma_2 = 1-mean(muestras_kuma_2[1:4999]-muestras_kuma_2[2:5000] == 0)
+tasa_kuma_3 = 1-mean(muestras_kuma_3[1:4999]-muestras_kuma_3[2:5000] == 0)
+
+```
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{ |c| c c c| }
+\hline
+ & \multicolumn{3}{c|}{Concentración} \\
+ & 1 & 5 & 10  \\
+\hline
+  Tasa de aceptación & `r round(tasa_kuma_1,3)` & `r round(tasa_kuma_1,2)` & `r round(tasa_kuma_3,3)` \\
+\hline
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{ |c| c c c| }
+\hline
+Concentración & 1 & 5 & 10  \\
+\hline
+  Tasa de aceptación & `r round(tasa_kuma_3,3)` & `r round(tasa_kuma_1,3)` & `r round(tasa_kuma_2,3)` \\
+\hline
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+
+
+En la figura x se observa que el metodo funciona mejor con una concentración alta porque oscila mas veces recorriendo la densidad de una manera mas eficiente. Esto se verifica observando las tasas de aceptación de los saltos en la tabla x.
+
+
+```{r, echo=FALSE, fig.width=8}
+ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b4b4b", bins = 24 ) + facet_wrap(cadena ~ .) + tema +
+  scale_x_continuous("X") +
+  scale_y_continuous("Frecuencia") +
+  scale_fill_discrete(labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen"))
+```
+
+```{r}
+acf_kuma_1 = acf(muestras_kuma_1, lag.max = Inf, plot = F)
+acf_kuma_2 = acf(muestras_kuma_2, lag.max = Inf, plot = F)
+acf_kuma_3 = acf(muestras_kuma_3, lag.max = Inf, plot = F)
+
+lag_kuma = max(which(acf_kuma_1$acf<.05)[1], which(acf_kuma_2$acf<.05)[1], which(acf_kuma_3$acf<.05)[1])
+
+acf_kuma = data.frame(ACF = c(acf_kuma_1$acf[1:lag_kuma], acf_kuma_2$acf[1:lag_kuma], acf_kuma_3$acf[1:lag_kuma]), Rezago = rep(0:(lag_kuma-1), 3), Concentracion = as.factor(rep(c(1, 5, 10), each = lag_kuma)))
+
+ggplot(acf_kuma) + geom_line(aes(x = Rezago, y = ACF)) + geom_point(aes(x = Rezago, y = ACF)) + facet_wrap(~ Concentracion) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue")
 ```
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Metropolis-Hastings en dos dimensiones
+
+La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multidimensionales. Igual que la situación anterior, las funciones de las que se quiere muestrear pueden no estar normalizadas. Se presentarán dos situaciones en las que se puede aplicar la técnica, la primera en un ejemplo simple donde se obtienen muestras de la distribución eficientemente, la segunda, una función en donde se pueden ver las fallas del método Metrópolis-Hastings.
+
+Para realizar estas muestras, no sirve la función de código en R presentada en la primera parte del informe. Por eso se tiene la necesidad de modificar dicha función.
+
+{r}
+# Código
+
+
+Se utilizará como función de salto propuesto una normal bivariada.
+
+## Normal multivariada
+
+La distribución a muestrear en este caso será una normal bivariada.
+
+$$
+p(\boldsymbol{x} \mid \boldsymbol{\mu}, \boldsymbol{\Sigma}) =
+    \frac{1}{(2\pi)^{k/2} |\boldsymbol{\Sigma}|^{1/2}}
+    \exp\left(-\frac{1}{2} (\boldsymbol{x} - \boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\boldsymbol{x} - \boldsymbol{\mu})\right)
+$$
+
+Se controlará que tan buenas son las muestras obtenidas a través de evaluación de la cadena generada por el método y qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés tiene la siguiente distribución.
+
+
+$$
+\begin{array}{lr}
+    \boldsymbol{\mu}^* = \begin{bmatrix} 0.4 \\ 0.75 \end{bmatrix}
+    & \boldsymbol{\Sigma}^* = \begin{bmatrix} 1.35 & 0.4 \\ 0.4 & 2.4 \end{bmatrix}
+\end{array}
+$$
+
+## Función de Rosenbrock
+
+El "valle de Rosenbrock", "banana de Rosenbrock" o simplemente función de Rosenbrock es una función matemática utilizada comunmente en problemas de optimización y prueba para algoritmos de optimización numérica.
+
+La función está definida por:
+$$
+f(x, y) = (a - x) ^ 2 + b(y - x^2) ^ 2
+$$
+En estadística bayesiana, la densidad del posterior suele tomar formas semejantes a dicha función, más específicamente y con las que se trabajará es la forma de la función $p^*$:
+$$
+p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
+$$
+
+Más específicamente, se utilizará la función con $a = 0.5$ y $b = 0.5$.
+
+Para tratar de generar muestras más eficientes de la distribución se probará la distribución de salto propuesta con distintas matrices de varianzas y covarianzas evaluando el rendimiento del Metropolis-Hastings con cada una.

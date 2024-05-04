@@ -96,9 +96,9 @@ hist(muestras_kuma_1)
 hist(muestras_kuma_2)
 hist(muestras_kuma_3)
 
-acf(muestras_kuma_1, lag.max = Inf)
-acf(muestras_kuma_2, lag.max = Inf)
-acf(muestras_kuma_3, lag.max = Inf)
+acf(muestras_kuma_1, lag.max = 19)
+acf(muestras_kuma_2, lag.max = 19)
+acf(muestras_kuma_3, lag.max = 19)
 
 mean(muestras_kuma_1)
 mean(muestras_kuma_2)
@@ -116,7 +116,6 @@ mean(sort(muestras_kuma_3)[4750:4751])
 logit_kuma_1 = log(muestras_kuma_1/(1-muestras_kuma_1))
 logit_kuma_2 = log(muestras_kuma_2/(1-muestras_kuma_2))
 logit_kuma_3 = log(muestras_kuma_3/(1-muestras_kuma_3))
-
 
 mean(logit_kuma_1)
 mean(logit_kuma_2)

@@ -283,7 +283,7 @@ En la figura x se observa que el metodo funciona mejor con una concentración al
 ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b4b4b", bins = 24 ) + facet_wrap(~ cadena, labeller = labeller(cadena = label_facet(muestras_kuma$cadena, "Concentración"))) + tema +
   scale_x_continuous("X") +
   scale_y_continuous("Frecuencia") +
-  scale_fill_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen"))
+  scale_fill_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("slateblue2", "salmon1", "seagreen2"))
 ```
 
 ```{r, echo=FALSE}
@@ -299,7 +299,7 @@ acf_kuma = data.frame(ACF = c(acf_kuma_1$acf[1:lag_kuma], acf_kuma_2$acf[1:lag_k
 
 ggplot(acf_kuma) + geom_line(aes(x = Rezago, y = ACF, color = Concentracion)) + geom_point(aes(x = Rezago, y = ACF)) + facet_wrap(~ Concentracion, labeller = labeller(Concentracion = label_facet(acf_kuma$Concentracion, "Concentración"))) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
 geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
-  scale_color_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("lightblue2", "violet", "lightgreen")) + tema
+  scale_color_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("slateblue2", "salmon1", "seagreen2")) + tema
 ```
 
 ```{r, echo=FALSE}
@@ -398,7 +398,7 @@ Para realizar estas muestras, no sirve la función presentada en la primera part
 
 # d_objetivo: Función que calcule la densidad de la función que se quiere muestrear.
 
-# matrix_var: Matrix de variancias y covariancias de la función de salto normal bivariada.
+# matrix_var: Matrix de varianzas y covarianzas de la función de salto normal bivariada.
 
 sample_mh_2d = function(n, p_inicial , d_objetivo, matrix_var = diag(1,2)){
   stopifnot(n > 0)
@@ -498,10 +498,36 @@ Se controlará que tan buenas son las muestras obtenidas a traves de la evaluaci
 $$
 \begin{array}{lr}
     \boldsymbol{\mu}^* = \begin{bmatrix} 0.4 \\ 0.75 \end{bmatrix}
-    & \boldsymbol{\Sigma}^* = \begin{bmatrix} 1.35 & 0.4 \\ 0.4 & 2.4 \end{bmatrix}
+    & \boldsymbol{\Sigma}^* = \begin{bmatrix} 1.35 & 0.4 \\ 0.4 & 2.4 \\ \end{bmatrix}
 \end{array}
 $$
-Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones. Se utiliza la matriz de varianzas y covarianzas 
+Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones. Para obtener las muestras, primero se debe seleccionar la matriz de covarianzas de la distribución de salto. Esto se logra evaluando el número de muestras efectivas de las dos dimensiones de las muestras generadas por separado, variando los valores en la matriz y quedandose con la que tenga el mayor número de muestras efectivas totales.
+
+El calculo realizado es: 
+
+$$N_{eff} = \frac{S}{1 + 2 \sum_{k=1}^N ACF(k)}$$
+Donde $S$ es el número de unidades generadas en la cadena, $ACF(k)$ es la autocorrelación de la cadena con $k$ rezagos y N es la cantidad de rezagos hasta que $ACF(k)<0.05$ por primera vez.
+
+
+```{r}
+#poner calculo
+var = matrix(0,nrow = 85, ncol = 3)
+var[85,] = c(1.85, 2.15, 0.5)
+```
+
+Los valores 
+
+$$
+\boldsymbol{\Sigma}_{Salto} = \begin{bmatrix} \sigma_1^2 & \sigma_{12} \\ \sigma_{12} & \sigma_2^2 \end{bmatrix} \\
+$$
+Con:
+
+$\sigma_1^2$ variando entre 0.85 y 1.85.
+$\sigma_2^2$ variando entre 1.90 y 2.90.
+$\sigma_{12}$ variando entre 0.20 y 0.60.
+
+La combinación de dichos valores con el mayor número de muestras efectivas totales es `r var[85,1]`, `r var[85,2]` y `r var[85,3]` para $\sigma_1^2$, $\sigma_2^2$ y $\sigma_{12}$ respectivamente.
+
 
 
 ```{r}
@@ -510,16 +536,77 @@ set.seed(69)
 d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
 
 
-muestra_normal = sample_mh_2d(5000, p_inicial = c(1,1), d_objetivo = d_objetivo_normal, matrix_var = matrix(c(1, .3, .3, 1), nrow = 2))
+muestra_normal = sample_mh_2d(5000, p_inicial = c(1,1), d_objetivo = d_objetivo_normal, matrix_var = matrix(c(var[85,1], var[85,3], var[85,3], var[85,2]), nrow = 2))
 
 muestra_normal_df = data.frame(obs = c(muestra_normal[,1],muestra_normal[,2]),
                            orden = rep(1:5000,2),
-                           cadena = rep(c("x", "y"), each = 5000))
+                           cadena = rep(c("x1", "x2"), each = 5000))
 
 ggplot(muestra_normal_df) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars(cadena))
+
+
+
+nef_norm = apply(muestra_normal, 2, FUN = neef)
 ```
+```{r, echo=FALSE}
+acf_norm1 = acf(muestra_normal[,1], lag.max = Inf, plot = F)
+acf_norm2 = acf(muestra_normal[,2], lag.max = Inf, plot = F)
+
+lag_norm = max(which(acf_norm1$acf<.05)[1],which(acf_norm2$acf<.05)[1])
+
+acf_norm = data.frame(ACF = c(acf_norm1$acf[1:lag_norm], acf_norm2$acf[1:lag_norm]), Rezago = rep(0:(lag_norm-1),2), Dim = rep(c("X1", "X2"), each = lag_norm))
 
 
+
+ggplot(acf_norm) + geom_line(aes(x = Rezago, y = ACF, color = Dim)) +
+facet_wrap(~Dim)  +
+geom_point(aes(x = Rezago, y = ACF)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
+  scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1")) +
+  tema
+```
+Las cadenas en la figura x se ven relativamenta aleatorias y parece recorrer el soporte de la función objetivo, que es indicio de una autocorrelación baja entre las observación generadas. Esto se aprecia en la figura x+1, donde la autocorrelación de ambas cadenas disminuye rápidamente al aumentar el rezago.
+El número de muestras efectivas para $x_1$ y $x_2$ es `r nef_norm[1]` y `r nef_norm[2]` respectivamente. Estos son valores relativamente grandes, que dan una imagen positiva de la calidad de la muestra generada.
+
+
+```{r}
+Prob_mh_norm_1 = mean(muestra_normal[, 1] > 1 & muestra_normal[, 2] < 0)
+Prob_mh_norm_2 = mean(muestra_normal[, 1] > 1 & muestra_normal[, 2] > 2)
+Prob_mh_norm_3 = mean(muestra_normal[, 1] > .4 & muestra_normal[, 2] > .75)
+
+
+rmv = rmvnorm(100000, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
+Prob_rmv_1 =pmvnorm(lower = c(1, -Inf), upper = c(Inf, 0), mean = c(0.4, 0.75), sigma = matrix(c(1.35, 0.4, 0.4, 2.4), nrow = 2))[1]
+Prob_rmv_2 =pmvnorm(lower = c(1, 2), upper = c(Inf, Inf), mean = c(0.4, 0.75), sigma = matrix(c(1.35, 0.4, 0.4, 2.4), nrow = 2))[1]
+Prob_rmv_3 =pmvnorm(lower = c(0.4, 0.75), upper = c(Inf, Inf), mean = c(0.4, 0.75), sigma = matrix(c(1.35, 0.4, 0.4, 2.4), nrow = 2))[1]
+
+Error1 = round(abs(Prob_mh_norm_1 - Prob_rmv_1)/Prob_rmv_1, 4)
+Error2 = round(abs(Prob_mh_norm_2 - Prob_rmv_2)/Prob_rmv_2, 4)
+Error3 = round(abs(Prob_mh_norm_3 - Prob_rmv_3)/Prob_rmv_3, 4)
+```
+Se calculan tres probabilidades usando las muestras generadas y se comparan con las reales para ver que tan precisas son.
+
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Probabilidades  & $\hat{\mathbf{X}}$ & $\mathbf{X}$ & Error relativo \\
+\hline
+$\mathrm{Pr}(X_1 > 1, X_2 < 0)$ &  `r Prob_mh_norm_1`  & `r round(Prob_rmv_1, 4)`   & `r Error1`  \\
+\hline
+$\mathrm{Pr}(X_1 > 1, X_2 > 2)$ &  `r Prob_mh_norm_2`  &  `r round(Prob_rmv_2, 4)`  & `r Error2`  \\
+\hline
+$\mathrm{Pr}(X_1 > 0.40, X_2 > 0.75)$ & `r Prob_mh_norm_3`  & `r round(Prob_rmv_3, 4)`  &  `r Error3` \\
+\hline
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+
+En la tabla 4 se observa que cuando se quiere estimar la probabilidad de un evento correspondiente a un área lejana de la masa central de probabilidades, la precisión de la aproximación disminuye, es decir, aumenta el error. Aún así, el método logra obtener una muestra aceptable al no ser tan grande el error relativo en dichos casos.
 
 
 
@@ -531,14 +618,87 @@ La función está definida por:
 $$
 f(x, y) = (a - x) ^ 2 + b(y - x^2) ^ 2
 $$
-En estadística bayesiana, la densidad de la distribución a *posteriori* suele tomar formas semejantes a dicha función y, más específicamente, con la que se trabaja en este informe es la función $p^*$:
+En estadística bayesiana, en ciertos casos, se obtiene una densidad de distribución a *posteriori* que toma una forma semejante a dicha función. 
+
+
+Un ejemplo de esto es la función $p^*$:
+
 $$
 p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
 $$
 
-Se utiliza la función con los valores $0.5$ para los parámetros a y b.
+Se quiere probar que tan bien puede Metropolis-Hastings generar muestras de dicha función de probabilidad y para ello se proponen distintas matrices de varianzas y covarianzas de la distribución de salto propuesta evaluando el rendimiento obtenido con cada una de ellas. Se utilizan los valores $0.5$ y $5$ para los parámetros a y b respectivamente.
 
-Para tratar de generar muestras más eficientes de la distribución se probará la distribución de salto propuesta con distintas matrices de varianzas y covarianzas evaluando el rendimiento del Metropolis-Hastings con cada una.
+```{r}
+rosenbrock = function (x) ((.5 - x(1))^2) + 5 * ((x(2) - (x(1)^2))^2)
+
+d_objetivo_rosenbrock = function (x) exp((-1)*(((.5 - x[1])^2) + 5 * ((x[2] - (x[1]^2))^2)))
+
+set.seed(69)
+
+muestra_rosenbrock_1 = sample_mh_2d(1000, p_inicial = c(1,1), d_objetivo = d_objetivo_rosenbrock,
+                              matrix_var = matrix(c(1, .7, .7, 1), nrow = 2))
+muestra_rosenbrock_2 = sample_mh_2d(1000, p_inicial = c(1,1), d_objetivo = d_objetivo_rosenbrock,
+                                    matrix_var = matrix(c(1, .3, .3, 1), nrow = 2))
+muestra_rosenbrock_3 = sample_mh_2d(1000, p_inicial = c(1,1), d_objetivo = d_objetivo_rosenbrock,
+                                    matrix_var = matrix(c(1,0,0,2), nrow = 2))
 
 
+muestra_rosenbrock_df_1 = data.frame(obs = c(muestra_rosenbrock_1[,1],muestra_rosenbrock_1[,2]),
+                               orden = rep(1:1000,2),
+                               cadena = rep(c("X1", "X2"), each = 1000),
+                               sigma = rep("1",1000))
+
+
+muestra_rosenbrock_df_2 = data.frame(obs = c(muestra_rosenbrock_2[,1],muestra_rosenbrock_2[,2]),
+                                     orden = rep(1:1000,2),
+                                     cadena = rep(c("X1", "X2"), each = 1000),
+                                     sigma = rep("2",1000))
+
+muestra_rosenbrock_df_3 = data.frame(obs = c(muestra_rosenbrock_3[,1],muestra_rosenbrock_3[,2]),
+                                     orden = rep(1:1000,2),
+                                     cadena = rep(c("X1", "X2"), each = 1000),
+                                     sigma = rep("3",1000))
+
+muestra_rosenbrock_df = rbind(muestra_rosenbrock_df_1, muestra_rosenbrock_df_2) 
+
+
+ggplot(muestra_rosenbrock_df) + geom_line(aes(x = orden, y = obs)) + 
+  facet_wrap(~cadena + sigma, ncol = 2)
+
+
+
+```
+
+```{r}
+tasa_rosen_1 = 1-mean(muestra_rosenbrock_1[1:999,]-muestra_rosenbrock_1[2:1000,] == 0)
+tasa_rosen_2 = 1-mean(muestra_rosenbrock_2[1:999,]-muestra_rosenbrock_2[2:1000,] == 0)
+tasa_rosen_3 = 1-mean(muestra_rosenbrock_3[1:999,]-muestra_rosenbrock_3[2:1000,] == 0)
+
+acf_rosen_x1_1 = acf(muestra_rosenbrock_1[,1], lag.max = Inf, plot = F)
+acf_rosen_x2_1 = acf(muestra_rosenbrock_1[,2], lag.max = Inf, plot = F)
+acf_rosen_x1_2 = acf(muestra_rosenbrock_2[,1], lag.max = Inf, plot = F)
+acf_rosen_x2_2 = acf(muestra_rosenbrock_2[,2], lag.max = Inf, plot = F)
+acf_rosen_x1_3 = acf(muestra_rosenbrock_3[,1], lag.max = Inf, plot = F)
+acf_rosen_x2_3 = acf(muestra_rosenbrock_3[,2], lag.max = Inf, plot = F)
+
+
+lag_rosen_1 = max(which(acf_rosen_x1_1$acf<.05)[1], which(acf_rosen_x2_1$acf<.05)[1])
+lag_rosen_2 = max(which(acf_rosen_x1_2$acf<.05)[1], which(acf_rosen_x2_2$acf<.05)[1])
+lag_rosen_3 = max(which(acf_rosen_x1_3$acf<.05)[1], which(acf_rosen_x2_3$acf<.05)[1])
+
+
+acf_rosen = data.frame(ACF = c(acf_rosen_1$acf[1:lag_rosen], acf_rosen_2$acf[1:lag_rosen]), Rezago = rep(0:(lag_rosen-1),2), Dim = rep(c("X1", "X2"), each = lag_rosen))
+
+
+
+ggplot(acf_norm) + geom_line(aes(x = Rezago, y = ACF, color = Dim)) +
+facet_wrap(~Dim)  +
+geom_point(aes(x = Rezago, y = ACF)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
+  scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1")) +
+  tema
+
+
+```
 

@@ -34,15 +34,22 @@ La función para utilizar el metodo es la siguiente:
 ```{r, eval=FALSE}
 # n: Tamaño de la cadena que se quiere generar
 
-# p_inicial: Primer punto con el que se inicial la cadena. Es igual a 0 por defecto.
+# p_inicial: Primer punto con el que se inicial la cadena.
+# Es igual a 0 por defecto.
 
-# v_random: Utilizar si se quiere empezar la cadena con un punto aleatorio. Introducir un vector de dos numeros para obtener un numero aleatoria entre ellos dos.
+# v_random: Utilizar si se quiere empezar la cadena con un punto aleatorio.
+# Introducir un vector de dos números para obtener un número aleatorio
+# entre ellos dos.
 
-# d_objetivo: Función que calcule la densidad de la función que se quiere muestrear.
+# d_objetivo: Función que calcula la densidad de la función que se
+# quiere muestrear.
 
-# r_propuesta: Función que genera un punto de la distribución de salto con la media sin especificar. Por defecto, se utiliza una normal estandar.
+# r_propuesta: Función que genera un punto de la distribución de salto con la
+# media sin especificar. Por defecto, se utiliza una normal estándar.
 
-# d_propuesta: Función que devuelve la densidad en un punto de la distribución de salto con la media sin especificar. Por defecto, se utiliza una normal estandar.
+# d_propuesta: Función que devuelve la densidad en un punto de la distribución
+# de salto con la media sin especificar. Por defecto, se utiliza una normal
+# estándar.
 
 sample_mh_1d = function(n, p_inicial = 0, d_objetivo, r_propuesta = rnorm, d_propuesta = dnorm, v_random = NA){
   stopifnot(n > 0)
@@ -60,7 +67,7 @@ sample_mh_1d = function(n, p_inicial = 0, d_objetivo, r_propuesta = rnorm, d_pro
     p_actual = puntos[1]
     p_nuevo = puntos[2]
     
-    #Calculo de la probabilidad de salto
+    #Cálculo de la probabilidad de salto
     prob = salto_1d(p_actual, p_nuevo, d_objetivo, d_propuesta)
     
     #Saltamos?
@@ -83,7 +90,7 @@ valor_salto_1d = function(muestras, r_propuesta, i){
   return(puntos)
 }
 
-#Calculo de la probabilidad de salto
+#Cálculo de la probabilidad de salto
 
 salto_1d = function(p_actual, p_nuevo, d_objetivo, d_propuesta) {
   f_nuevo = d_objetivo(p_nuevo)
@@ -126,7 +133,7 @@ tema = theme(panel.grid = element_line(color = "lightgrey"),
 
 ## Distribución de Kumaraswamy
 
-La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matematica resulta ser de computo mas sencillo. Dicha función es:
+La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matemática resulta ser de cómputo más sencillo. Dicha función es:
 
 
 \begin{center}
@@ -135,7 +142,7 @@ p(x \mid a, b) = a b x ^ {a - 1} (1 - x ^ a)^{b - 1} & \text{con } a, b > 0
 \end{array}$
 \end{center}
 
-Para observar que forma tiene, se grafica su funcion de densidad para 5 valores de a y b.
+Para observar que forma tiene, se grafica su función de densidad para 5 valores de a y b.
 
 \begin{table}[h!]
 \begin{center}
@@ -183,11 +190,7 @@ ggplot(data_kuma) + geom_line(aes(x = x, y = y, color = color)) + scale_color_di
   scale_x_continuous(name = "X")
 ```
 
-Es una funcion sencilla donde su forma de densidad resulta muy flexible al variar a y b por lo que se puede usar facilmente para la representacion de la probabilidad a *priori* de parametros que esten entre 0 y 1.
-
-
-
-
+Es una función sencilla donde su forma de densidad resulta muy flexible al variar a y b por lo que se puede usar fácilmente para la representación de la probabilidad a *priori* de parámetros que esten entre 0 y 1.
 
 Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
 Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores y para obtener el primer valor de la cadena se genera aleatoriamente con igual probabilidad un punto entre 0 y 1 .
@@ -267,14 +270,14 @@ Concentración & 1 & 5 & 10  \\
   Tasa de aceptación & `r round(tasa_kuma_1,3)-.001` & `r round(tasa_kuma_2,3)` & `r round(tasa_kuma_3,3)` \\
 \hline
 \end{tabular}
-\caption{Table to test captions and labels.}
-\label{table:1}
+\caption{Evaluación de las cadenas}
+\label{tabla:1}
 \end{center}
 \end{table}
 
 
 
-En la figura x se observa que el metodo funciona mejor con una concentración alta porque oscila mas veces recorriendo la densidad de una manera mas eficiente. Esto se verifica observando las tasas de aceptación de los saltos en la tabla x.
+En la figura x se observa que el método funciona mejor con una concentración alta porque oscila más veces recorriendo la densidad de una manera más eficiente. Esto se verifica observando las tasas de aceptación de los saltos en la tabla x.
 
 
 ```{r, echo=FALSE, fig.width=8}
@@ -336,7 +339,7 @@ percentil_95_logit3_kuma = mean(sort(logit_kuma_3)[4750:4751])
 
 
 
-Las tres cadenas convergen a la misma distribución y la cantidad de rezagos que tardan hasta llegar a una autocorrelación despreciable (<0.05) es baja y similar en todas por lo que el metodo funciona correctamente aún variando la dispersión de la distribución del salto.
+Las tres cadenas convergen a la misma distribución y la cantidad de rezagos que tardan hasta llegar a una autocorrelación despreciable (<0.05) es baja y similar en todas por lo que el método funciona correctamente aún variando la dispersión de la distribución del salto.
 
 
 \newpage
@@ -354,8 +357,8 @@ $logit(X_5)$ & `r media_logit2_kuma` & `r percentil_5_logit2_kuma` & `r percenti
 $logit(X_{10})$ & `r media_logit3_kuma` & `r percentil_5_logit3_kuma` & `r percentil_95_logit3_kuma ` \\ \hline
 
 \end{tabular}
-\caption{Table to test captions and labels.}
-\label{table:1}
+\caption{Medidas descriptivas estimadas de la distribución}
+\label{tabla:1}
 \end{center}
 \end{table}
 
@@ -364,7 +367,7 @@ $${\displaystyle \operatorname {logit} (X)=\log \left({\frac {X}{1-X}}\right)=\l
 
 
 
-Todas las medidas descriptivas de X son parecidas para las distintas cadenas generadas, pero si se le aplica la transformación logit a X esas diferencias minimas se agrandan un poco.
+Todas las medidas descriptivas de X son parecidas para las distintas cadenas generadas, pero si se le aplica la transformación *logit* a X esas diferencias mínimas se agrandan un poco.
 
 
 
@@ -382,7 +385,7 @@ Todas las medidas descriptivas de X son parecidas para las distintas cadenas gen
 
 # Aplicación de Metropolis-Hastings en dos dimensiones
 
-La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multivariadias. Igual que la situación anterior, no es necesario que las funciones que se quieren muestrear esten normalizadas. Se presentan dos situaciones en las que se puede aplicar la técnica. La primera, un ejemplo simple donde se obtienen muestras de la distribución normal bivariada donde este metodo funciona bien y la segunda, una función dificil de obtener muestras válidas en donde se pueden ver las fallas de Metropolis-Hastings.
+La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multivariadias. Igual que la situación anterior, no es necesario que las funciones que se quieren muestrear esten normalizadas. Se presentan dos situaciones en las que se puede aplicar la técnica. La primera, un ejemplo simple donde se obtienen muestras de la distribución normal bivariada donde este método funciona bien y la segunda, una función dificil de obtener muestras válidas en donde se pueden ver las fallas de Metropolis-Hastings.
 
 Para realizar estas muestras, no sirve la función presentada en la primera parte del informe. Por eso se tiene la necesidad de modificar dicha función.
 
@@ -403,7 +406,7 @@ Para realizar estas muestras, no sirve la función presentada en la primera part
 sample_mh_2d = function(n, p_inicial , d_objetivo, matrix_var = diag(1,2)){
   stopifnot(n > 0)
   muestras = matrix(nrow = n,ncol = 2)
-#Seleccion del primer valor de la cadena
+#Selección del primer valor de la cadena
   muestras[1,] = p_inicial
 
   #Generación de todos los n-1 puntos siguientes de la cadena
@@ -413,7 +416,7 @@ sample_mh_2d = function(n, p_inicial , d_objetivo, matrix_var = diag(1,2)){
     p_actual = puntos[1:2]
     p_nuevo = puntos[3:4]
     
-    #Calculo de la probabilidad de salto
+    #Cálculo de la probabilidad de salto
     prob = salto_2d(p_actual, p_nuevo, d_objetivo, matrix_var)
     
     #Saltamos?
@@ -443,7 +446,7 @@ valor_salto_2d = function(muestras, matrix_var, i){
   return(puntos)
 }
 
-#Calculo de la probabilidad de salto
+#Cálculo de la probabilidad de salto
 
 salto_2d = function(p_actual, p_nuevo, d_objetivo, matrix_var) {
   f_nuevo = d_objetivo(p_nuevo)
@@ -492,7 +495,7 @@ $$
 
 Donde $\mu$ es el vector de esperanzas y $\Sigma$ la matrix de varianzas y covarianzas.
 
-Se controlará que tan buenas son las muestras obtenidas a traves de la evaluación de la cadena generada por el método y de qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés viene dada por los siguientes parámetros.
+Se controla que tan buenas son las muestras obtenidas a través de la evaluación de la cadena generada por el método y de qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés viene dada por los siguientes parámetros.
 
 
 $$
@@ -503,14 +506,14 @@ $$
 $$
 Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones. Para obtener las muestras, primero se debe seleccionar la matriz de covarianzas de la distribución de salto. Esto se logra evaluando el número de muestras efectivas de las dos dimensiones de las muestras generadas por separado, variando los valores en la matriz y quedandose con la que tenga el mayor número de muestras efectivas totales.
 
-El calculo realizado es: 
+El cálculo realizado es: 
 
 $$N_{eff} = \frac{S}{1 + 2 \sum_{k=1}^N ACF(k)}$$
 Donde $S$ es el número de unidades generadas en la cadena, $ACF(k)$ es la autocorrelación de la cadena con $k$ rezagos y N es la cantidad de rezagos hasta que $ACF(k)<0.05$ por primera vez.
 
 
 ```{r}
-#poner calculo
+#poner cálculo
 var = matrix(0,nrow = 85, ncol = 3)
 var[85,] = c(1.85, 2.15, 0.5)
 ```

@@ -32,4 +32,5 @@ for (i in 1:nrow(var)) {
 
 which.max(nef[,1]+nef[,2])
 var[85,]
-
+var[13,]
+nef[13,1]+nef[13,2]

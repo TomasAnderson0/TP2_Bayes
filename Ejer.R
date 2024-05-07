@@ -213,17 +213,20 @@ ggplot(muestra_rosenbrock_df_3) + geom_line(aes(x = orden, y = obs)) + facet_gri
 
 #Ejer 10
 
-Prob_mh_rosen_1_1 = mean(muestra_rosenbrock_1[, 1] < 1 & muestra_rosenbrock_1[, 1] > 0 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
-Prob_mh_rosen_1_2 = mean(muestra_rosenbrock_1[, 1] < 0 & muestra_rosenbrock_1[, 1] > -1 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
-Prob_mh_rosen_1_3 = mean(muestra_rosenbrock_1[, 1] < 2.2 & muestra_rosenbrock_1[, 1] > 1 & muestra_rosenbrock_1[, 2] > 2 & muestra_rosenbrock_1[, 2] < 3)
+Prob_mh_rosen_1 = mean(muestra_rosenbrock_1[, 1] < 1 & muestra_rosenbrock_1[, 1] > 0 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
+Prob_mh_rosen_2 = mean(muestra_rosenbrock_1[, 1] < 0 & muestra_rosenbrock_1[, 1] > -1 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
+Prob_mh_rosen_3 = mean(muestra_rosenbrock_1[, 1] < 2.2 & muestra_rosenbrock_1[, 1] > 1 & muestra_rosenbrock_1[, 2] > 2 & muestra_rosenbrock_1[, 2] < 3)
 
 
-# r_rosen = ?
-Prob_rmv_1 = mean(r_rosen[, 1] > 1 & r_rosen[, 2] < 0)
-Prob_rmv_2 = mean(r_rosen[, 1] > 1 & r_rosen[, 2] > 2)
-Prob_rmv_3 = mean(r_rosen[, 1] > .4 & r_rosen[, 2] > .75)
+ro = function (x, y) exp((-1)*(((.5 - x)^2) + 5 * ((y - (x^2))^2)))
+int = integral2(ro, xmin = -261, xmax =  261, ymin = -261, ymax = 261)$Q[1]
 
 
-abs(Prob_mh_1 - Prob_rmv_1)/Prob_rmv_1
-abs(Prob_mh_2 - Prob_rmv_2)/Prob_rmv_2
-abs(Prob_mh_3 - Prob_rmv_3)/Prob_rmv_3
+Prob_rmv_1 =integral2(ro, xmin = 0, xmax =  1, ymin = 0, ymax = 1)$Q[1]/int
+Prob_rmv_2 =integral2(ro, xmin = -1, xmax =  1, ymin = 0, ymax = 1)$Q[1]/int
+Prob_rmv_3 =integral2(ro, xmin = 1, xmax =  2, ymin = 2, ymax = 3)$Q[1]/int
+
+
+error_1_rosen = abs(Prob_mh_rosen_1 - Prob_rmv_1)/Prob_rmv_1
+error_2_rosen =abs(Prob_mh_rosen_2 - Prob_rmv_2)/Prob_rmv_2
+error_3_rosen =abs(Prob_mh_rosen_3 - Prob_rmv_3)/Prob_rmv_3

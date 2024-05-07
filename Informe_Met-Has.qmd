@@ -119,6 +119,7 @@ p_gen_1d = function(result, p_actual, p_nuevo) {
 source("Funciones.R")
 library(ggplot2)
 library(mvtnorm)
+library(pracma)
 tema = theme(panel.grid = element_line(color = "lightgrey"),
              panel.background = element_rect(fill = "#f8f8f8"),
              axis.line = element_line(color = "black"))
@@ -627,7 +628,24 @@ $$
 p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
 $$
 
-Se quiere probar que tan bien puede Metropolis-Hastings generar muestras de dicha función de probabilidad y para ello se proponen distintas matrices de varianzas y covarianzas de la distribución de salto propuesta evaluando el rendimiento obtenido con cada una de ellas. Se utilizan los valores $0.5$ y $5$ para los parámetros a y b respectivamente.
+Se quiere probar que tan bien puede Metropolis-Hastings generar muestras de dicha función de probabilidad y para ello se proponen distintas matrices de varianzas y covarianzas de la distribución de salto propuesta evaluando el rendimiento obtenido con cada una de ellas. Se utilizan los valores $0.5$ y $5$ para los parámetros a y b respectivamente para la generación de las 1000 observaciones.
+
+
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+       & Muestra 1 & Muestra 2 & Muestra 3 \\ \hline
+$\sigma_1^2$ & 1         & 1         & 1 \\ \hline
+$\sigma_2^2$ & 1         & 1         & 2   \\ \hline
+$\sigma_{12}$ & 0.7       & 0.3       & 0  \\ \hline
+\end{tabular}
+\caption{Valores de las matrices de varianzas de cada muestra generada.}
+\label{table:1}
+\end{center}
+\end{table}
+
 
 ```{r}
 rosenbrock = function (x) ((.5 - x(1))^2) + 5 * ((x(2) - (x(1)^2))^2)
@@ -670,6 +688,22 @@ ggplot(muestra_rosenbrock_df) + geom_line(aes(x = orden, y = obs)) +
 
 ```
 
+
+
+
+```{r}
+nef_rosenbrock_1 = apply(muestra_rosenbrock_1, 2, FUN = neef)
+nef_rosenbrock_2 = apply(muestra_rosenbrock_2, 2, FUN = neef)
+nef_rosenbrock_3 = apply(muestra_rosenbrock_3, 2, FUN = neef)
+```
+
+
+En comparación con la figura x del caso Normal bivariado, se puede notar que las cadenas de la figura x tienen una tasa de aceptación menor, generando más estancamientos en un valor y menos picos. Ademas, el numero efectivo de muestras es menor.
+
+
+
+
+
 ```{r}
 tasa_rosen_1 = 1-mean(muestra_rosenbrock_1[1:999,]-muestra_rosenbrock_1[2:1000,] == 0)
 tasa_rosen_2 = 1-mean(muestra_rosenbrock_2[1:999,]-muestra_rosenbrock_2[2:1000,] == 0)
@@ -686,19 +720,100 @@ acf_rosen_x2_3 = acf(muestra_rosenbrock_3[,2], lag.max = Inf, plot = F)
 lag_rosen_1 = max(which(acf_rosen_x1_1$acf<.05)[1], which(acf_rosen_x2_1$acf<.05)[1])
 lag_rosen_2 = max(which(acf_rosen_x1_2$acf<.05)[1], which(acf_rosen_x2_2$acf<.05)[1])
 lag_rosen_3 = max(which(acf_rosen_x1_3$acf<.05)[1], which(acf_rosen_x2_3$acf<.05)[1])
+lag_rosen = max(lag_rosen_1, lag_rosen_2, lag_rosen_3)
+
+acf_rosen_1 = data.frame(ACF = c(acf_rosen_x1_1$acf[1:lag_rosen], acf_rosen_x2_1$acf[1:lag_rosen]), Rezago = rep(0:(lag_rosen-1),2), Dim = rep(c("X1", "X2"), each = lag_rosen), Cov = "Muestra 1")
+
+acf_rosen_2 = data.frame(ACF = c(acf_rosen_x1_2$acf[1:lag_rosen], acf_rosen_x2_2$acf[1:lag_rosen]), Rezago = rep(0:(lag_rosen-1),2), Dim = rep(c("X1", "X2"), each = lag_rosen), Cov = "Muestra 2")
+
+acf_rosen_3 = data.frame(ACF = c(acf_rosen_x1_3$acf[1:lag_rosen], acf_rosen_x2_3$acf[1:lag_rosen]), Rezago = rep(0:(lag_rosen-1),2), Dim = rep(c("X1", "X2"), each = lag_rosen), Cov = "Muestra 3")
+
+acf_rosen = rbind(acf_rosen_1, acf_rosen_2, acf_rosen_3)
 
 
-acf_rosen = data.frame(ACF = c(acf_rosen_1$acf[1:lag_rosen], acf_rosen_2$acf[1:lag_rosen]), Rezago = rep(0:(lag_rosen-1),2), Dim = rep(c("X1", "X2"), each = lag_rosen))
-
-
-
-ggplot(acf_norm) + geom_line(aes(x = Rezago, y = ACF, color = Dim)) +
-facet_wrap(~Dim)  +
-geom_point(aes(x = Rezago, y = ACF)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+ggplot(acf_rosen) + geom_line(aes(x = Rezago, y = ACF, color = Cov)) +
+facet_wrap(~Dim*Cov)  +
+geom_point(aes(x = Rezago, y = ACF), size = .1) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
 geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
-  scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1")) +
+  scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1","seagreen2")) +
   tema
 
 
+
 ```
+
+
+En la figura x, todas las cadenas bajan lentamente hasta tener una autocorrelación despreciable, pero la segunda lo hace de forma más rápida.  
+
+
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+   & Muestra 1 & Muestra 2 & Muestra 3 \\ \hline
+X1 & `r nef_rosenbrock_1[1]`& `r nef_rosenbrock_2[1]`& `r nef_rosenbrock_3[1]`
+\\ \hline
+X2 & `r nef_rosenbrock_1[2]`& `r nef_rosenbrock_2[2]` & `r nef_rosenbrock_3[2]`
+\\ \hline
+\end{tabular}
+\caption{Número efectivo de muestras}
+\label{table:1}
+\end{center}
+\end{table}
+
+
+El numero de muestras efectivas para cada cadena es bajo. Esto tiene sentido, al ver los resultados de la figura x y x.
+```{r}
+Prob_mh_rosen_1 = mean(muestra_rosenbrock_1[, 1] < 1 & muestra_rosenbrock_1[, 1] > 0 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
+Prob_mh_rosen_2 = mean(muestra_rosenbrock_1[, 1] < 0 & muestra_rosenbrock_1[, 1] > -1 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
+Prob_mh_rosen_3 = mean(muestra_rosenbrock_1[, 1] < 2.2 & muestra_rosenbrock_1[, 1] > 1 & muestra_rosenbrock_1[, 2] > 2 & muestra_rosenbrock_1[, 2] < 3)
+
+
+ro = function (x, y) exp((-1)*(((.5 - x)^2) + 5 * ((y - (x^2))^2)))
+int = integral2(ro, xmin = -261, xmax =  261, ymin = -261, ymax = 261)$Q[1]
+
+
+Prob_int_1 =integral2(ro, xmin = 0, xmax =  1, ymin = 0, ymax = 1)$Q[1]/int
+Prob_int_2 =integral2(ro, xmin = -1, xmax =  1, ymin = 0, ymax = 1)$Q[1]/int
+Prob_int_3 =integral2(ro, xmin = 1, xmax =  2, ymin = 2, ymax = 3)$Q[1]/int
+
+
+error_1_rosen =abs(Prob_mh_rosen_1 - Prob_int_1)/Prob_int_1
+error_2_rosen =abs(Prob_mh_rosen_2 - Prob_int_2)/Prob_int_2
+error_3_rosen =abs(Prob_mh_rosen_3 - Prob_int_3)/Prob_int_3
+```
+
+
+Se calculan tres probabilidades usando las muestras generadas y se comparan con las reales para ver que tan precisas son.
+
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Probabilidades  & $\hat{\mathbf{X}}$ & $\mathbf{X}$ & Error relativo \\
+\hline
+$\mathrm{Pr}(0 < X_1 < 1, 0 < X_2 < 1)$ &  `r Prob_mh_rosen_1`  & `r round(Prob_int_1, 3)`   &  `r error_1_rosen` \\
+\hline
+$\mathrm{Pr}(-1 < X_1 < 0, 0 < X_2 < 1)$ &  `r Prob_mh_rosen_2`  &  `r round(Prob_int_2, 3)`  & `r error_2_rosen`  \\
+\hline
+$\mathrm{Pr}(1 < X_1 < 2, 2 < X_2 < 3)$ & `r Prob_mh_rosen_3`  & `r round(Prob_int_3, 3)`  &  `r error_3_rosen` \\
+\hline
+\end{tabular}
+\caption{Table to test captions and labels.}
+\label{table:1}
+\end{center}
+\end{table}
+
+El error absoluto 
+
+
+
+
+
+
+
+
+
 

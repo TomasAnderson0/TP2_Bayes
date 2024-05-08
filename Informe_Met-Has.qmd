@@ -921,7 +921,6 @@ La distribución estimada de la figura 12 tiene una similitud en forma con la ve
 
 Ademas, con los mismos datos, se calculan tres probabilidades y se comparan con las reales para ver que tan precisas son.
 
-\newpage
 \begin{table}[h!]
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
@@ -949,7 +948,6 @@ Los errores relativos de la tabla 7 son muy grande, por lo que da un indicio de 
 Metropolis-Hastings es un método útil en ciertas ocasiones. Es simple, facil de programar y entender, y además se sabe que cuando el número de muestras tiende a infinito, la distribución de probabilidad de la secuencia tiende a la verdadera función objetivo, pero en casos donde la función de densidad de la distribución sea compleja es poco preciso. Para obtener una muestra con buena representatividad, es decir, que haya explorado el rango completo de la distribución, se requerira una muestra de tamaño grande. Entonces, el método no sera de utilidad al requerir tantas iteraciones para llegar a un resultado aceptable. Además, al aumentar la dimensión se incrementa el tiempo que le toma a la computadora realizar los cálculos. Esto, combinado con el hecho de que hay métodos más eficientes hace a Metropolis-Hastings una técnica no recomendada. 
 Para obtener muestras de una función de densidad, es preferible el uso de otros métodos como Hamiltonian-Montecarlo.
 
-\newpage
 # Anexo
 
 En el siguiente repositorio, se encuntran los codigos utilizados para este informe. 

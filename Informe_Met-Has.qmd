@@ -10,7 +10,7 @@ La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobr
 
 # Metropolis-Hastings
 
-Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de S valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
+Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad, no necesariamente normalizada, generando un secuencia de S valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
 Esta técnica funciona de la siguiente manera:
 
@@ -285,7 +285,7 @@ ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b
   scale_fill_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("slateblue2", "salmon1", "seagreen2"))
 ```
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = ""}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación de las cadenas de Kumaraswamy"}
 acf_kuma_1 = acf(muestras_kuma_1, lag.max = Inf, plot = F)
 acf_kuma_2 = acf(muestras_kuma_2, lag.max = Inf, plot = F)
 acf_kuma_3 = acf(muestras_kuma_3, lag.max = Inf, plot = F)
@@ -495,7 +495,7 @@ $$
 $$
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Distribución de la normal bivariada propuesta"}
 mu <- c(0.4, 0.75)
 sigma <- matrix(c(1.35, 0.4, 0.4, 2.4), nrow = 2)
 x <- seq(-4, 4.5, length.out = 100)

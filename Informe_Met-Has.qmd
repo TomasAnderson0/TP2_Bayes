@@ -550,7 +550,7 @@ La combinación de dichos valores con el mayor número de muestras efectivas tot
 
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas con distintas matrices de covarianzas"}
 set.seed(69)
 
 d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
@@ -569,7 +569,7 @@ ggplot(muestra_normal_df) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars
 
 nef_norm = apply(muestra_normal, 2, FUN = neef)
 ```
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación de las cadenas con distinta matriz de covarianzas"}
 acf_norm1 = acf(muestra_normal[,1], lag.max = Inf, plot = F)
 acf_norm2 = acf(muestra_normal[,2], lag.max = Inf, plot = F)
 
@@ -648,7 +648,7 @@ $$
 p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
 $$
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 7}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 7, fig.cap = "Distribución de la p* con a = 0.5 y b = 0.5"}
 x <- seq(-1.5, 2.1, length.out = 100)
 y <- seq(-1, 4.25, length.out = 100)
 grid <- expand.grid(x = x, y = y)
@@ -689,7 +689,7 @@ $\sigma_{12}$ & 0.7       & 0.3       & 0  \\ \hline
 \end{table}
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas con distintas matrices de covarianzas"}
 rosenbrock = function (x) ((.5 - x(1))^2) + 5 * ((x(2) - (x(1)^2))^2)
 
 d_objetivo_rosenbrock = function (x) exp((-1)*(((.5 - x[1])^2) + 5 * ((x[2] - (x[1]^2))^2)))
@@ -746,7 +746,7 @@ En comparación con la figura x del caso Normal bivariado, se puede notar que la
 
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación según la muestra"}
 tasa_rosen_1 = 1-mean(muestra_rosenbrock_1[1:999,]-muestra_rosenbrock_1[2:1000,] == 0)
 tasa_rosen_2 = 1-mean(muestra_rosenbrock_2[1:999,]-muestra_rosenbrock_2[2:1000,] == 0)
 tasa_rosen_3 = 1-mean(muestra_rosenbrock_3[1:999,]-muestra_rosenbrock_3[2:1000,] == 0)

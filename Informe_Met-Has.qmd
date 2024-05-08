@@ -4,12 +4,13 @@ format: pdf
 editor: visual
 lang: "es"
 ---
+# Introducción
 
-La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones. Se usan dos fuentes de información para ello. La primera es lo que uno cree conocer sobre los parámetros previamente al realizar un experimento, es decir, la información a *priori*, y la segunda, los resultados que se obtienen al realizarlo, que se lo denomina como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hastings.
+La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones y para ello, se utilizan dos fuentes de información. La primera es lo que uno cree conocer sobre los parámetros previamente, es decir, la información a *priori*. La segunda es que tan compatibles son los valores de los parametros con los datos observados, denominada como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hastings.
 
-## Metropolis-Hastings
+# Metropolis-Hastings
 
-Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
+Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad generando un secuencia de S valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
 Esta técnica funciona de la siguiente manera:
 
@@ -17,7 +18,7 @@ Esta técnica funciona de la siguiente manera:
 2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo $q$ la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
-        -   $α_{x→x′} = min(1,f(x′)f(x))$
+        -   $α_{x→x′} = min(1,f(x′)/f(x))$
     ii. Saltar a $x′$ con probabilidad $α_{x→x′}$:
 
 ```{=tex}
@@ -79,7 +80,6 @@ sample_mh_1d = function(n, p_inicial = 0, d_objetivo, r_propuesta = rnorm,
 }
 
 #Donde las funciones utilizadas son:
-
 #Proposición del nuevo valor
 valor_salto_1d = function(muestras, r_propuesta, i){
   p_actual = muestras[i-1]
@@ -129,7 +129,7 @@ tema = theme(panel.grid = element_line(color = "lightgrey"),
 
 ## Distribución de Kumaraswamy
 
-La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $(0,1)$. Su función de densidad se parece a la beta pero su expresión matemática resulta ser de cómputo más sencillo. Dicha función es:
+La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $[0,1]$. Su función de densidad se parece a la beta pero su expresión matemática resulta ser de cómputo más sencillo. Dicha función es:
 
 
 \begin{center}
@@ -160,7 +160,7 @@ Para observar que forma tiene, se grafica su función de densidad para 5 valores
 
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.align='center'}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.align='right', fig.cap = "Curvas de densidad de Kumaraswamy"}
 kumaraswamy = function(a,b,x) {
   stopifnot(a > 0)
   stopifnot(b > 0)
@@ -186,14 +186,14 @@ ggplot(data_kuma) + geom_line(aes(x = x, y = y, color = color)) + scale_color_di
   scale_x_continuous(name = "X")
 ```
 
-Es una función sencilla donde su forma de densidad resulta muy flexible al variar a y b por lo que se puede usar fácilmente para la representación de la probabilidad a *priori* de parámetros que esten entre 0 y 1.
+Es una función sencilla donde su forma de densidad resulta muy flexible al variar a y b, por lo que se puede usar fácilmente para la representación de la probabilidad a *priori* de parámetros que esten entre 0 y 1.
 
 Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
 Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores y para obtener el primer valor de la cadena se genera aleatoriamente con igual probabilidad un punto entre 0 y 1 .
 
 Se usan tres valores de concentración diferentes para evaluar la eficiencia del método.
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas de la distribución de Kumaraswamy según concentración "}
 r_beta_by_mean = function(n, media, con){
   alfa = media * con
   beta = con - alfa
@@ -273,10 +273,10 @@ Concentración & 1 & 5 & 10  \\
 
 
 
-En la figura x se observa que el método funciona mejor con una concentración alta porque oscila más veces recorriendo la densidad de una manera más eficiente. Esto se verifica observando las tasas de aceptación de los saltos en la tabla 2.
+En la figura 2 se observa que el método funciona mejor con una concentración alta porque oscila más veces recorriendo la densidad de una manera más eficiente. Esto se verifica observando las tasas de aceptación de los saltos en la tabla 2.
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.width=8}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.width=8, fig.cap = "Distribuciones de las observaciones generadas de la Kumaraswamy"}
 
 
 ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b4b4b", bins = 24 ) + facet_wrap(~ cadena, labeller = labeller(cadena = label_facet(muestras_kuma$cadena, "Concentración"))) + tema +
@@ -285,7 +285,7 @@ ggplot(muestras_kuma) + geom_histogram(aes(x = obs, fill = cadena), color = "#4b
   scale_fill_discrete(guide = "none",labels = c("1", "5", "10"), name = c("Concentración"), type = c("slateblue2", "salmon1", "seagreen2"))
 ```
 
-```{r, echo=FALSE}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = ""}
 acf_kuma_1 = acf(muestras_kuma_1, lag.max = Inf, plot = F)
 acf_kuma_2 = acf(muestras_kuma_2, lag.max = Inf, plot = F)
 acf_kuma_3 = acf(muestras_kuma_3, lag.max = Inf, plot = F)

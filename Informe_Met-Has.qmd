@@ -1,16 +1,66 @@
 ---
-title: "Informe_Met-Has"
 format: pdf
 editor: visual
 lang: "es"
+header-includes:
+  - \usepackage{ragged2e}
+  - \usepackage{hyperref}
 ---
+
+
+\Centering
+
+\vspace{3cm}
+
+
+\pagenumbering{gobble}
+
+\vspace{5cm}
+
+\large
+LICENCIATURA EN ESTADÍSTICA
+
+\vspace{1cm}
+
+\large
+\Huge
+"Análisis del método Metropolis-Hastings en una y dos dimensiones"
+\Huge
+\newline
+\vspace{0.3cm}
+
+\normalsize
+Trabajo Práctico 2
+\vspace{1cm}
+\begin{center}
+    \includegraphics[width=.5\linewidth]{imagen.jpg}
+\end{center}
+\vspace{2cm}
+Autores: Tomás Anderson - Alejo Vaschetti - Manuel Moresi
+
+Docentes: Ignacio Evangelista - Tomás Capretto
+
+08/05/2024
+\normalsize
+
+\newpage
+\hypersetup{linkcolor = black}
+\tableofcontents
+
+
+\newpage
+\pagenumbering{arabic}
+
+\RaggedRight
+\newpage
+
 # Introducción
 
-La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones y para ello, se utilizan dos fuentes de información. La primera es lo que uno cree conocer sobre los parámetros previamente, es decir, la información a *priori*. La segunda es que tan compatibles son los valores de los parametros con los datos observados, denominada como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hastings.
+La estadística bayesiana se usa para poder dar respuestas a incertidumbres sobre parámetros que afectan a distintas situaciones y para ello, se utilizan dos fuentes de información. La primera es lo que uno cree conocer previamente sobre los parámetros antes de observar los datos, es decir, la información a *priori*. La segunda es que tan compatibles son los valores de los parametros con los datos observados, denominada como la *verosimilitud*. Juntando estas informaciones se obtiene lo que se conoce como la distribución a *posteriori* del o los parámetros. Pero para poder encontrar respuesta al desconocimiento sobre el tema se debe poder sacar muestras de la distribución a *posteriori*. Para realizar esto, una de las técnicas que se pueden utilizar es Metropolis-Hastings.
 
 # Metropolis-Hastings
 
-Esta tecnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad, no necesariamente normalizada, generando un secuencia de S valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
+Esta técnica es un método de Montecarlo basado en cadenas de Markov que consiste, a grandes rasgos, en recorrer los distintos valores de una distribución de probabilidad, no necesariamente normalizada, generando un secuencia de S valores posibles $x$ de dicha distribución $x(1),x(2),…,x(S)$ donde para obtener $x(i+1)$ usamos $x(i)$. De esta manera se quiere que el conjunto de los valores simulados se aproximen lo máximo posible a una muestra real de la distribución.
 
 Esta técnica funciona de la siguiente manera:
 
@@ -18,7 +68,7 @@ Esta técnica funciona de la siguiente manera:
 2.  En función del valor actual $x(i)=x$, proponemos un nuevo valor $x′$ en función de $q(x′∣x)$ siendo $q$ la distribución de salto que uno debe proponer, que sera la que presente los puntos de salto posibles.
 3.  Decidimos si vamos a la nueva ubicación $x(i+1)=x′$ o si nos quedamos en $x(i+1)=x$:
     i.  Calcular la probabilidad de salto:
-        -   $α_{x→x′} = min(1,f(x′)/f(x))$
+        -   $α_{x→x′} = min(1,\frac{f(x′)q(x∣x′)}{f(x)q(x′∣x)})$ donde f es la función de la que se quiere obtener muestras.
     ii. Saltar a $x′$ con probabilidad $α_{x→x′}$:
 
 ```{=tex}
@@ -36,7 +86,7 @@ La función para utilizar el método es la siguiente:
 ```{r, eval=FALSE}
 # n: Tamaño de la cadena que se quiere generar
 
-# p_inicial: Primer punto con el que se inicial la cadena.
+# p_inicial: Primer punto con el que se inicia la cadena.
 # Es igual a 0 por defecto.
 
 # v_random: Utilizar si se quiere empezar la cadena con un punto aleatorio.
@@ -129,7 +179,7 @@ tema = theme(panel.grid = element_line(color = "lightgrey"),
 
 ## Distribución de Kumaraswamy
 
-La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $[0,1]$. Su función de densidad se parece a la beta pero su expresión matemática resulta ser de cómputo más sencillo. Dicha función es:
+La distribución de Kumaraswamy es una distribución de probabilidad continua que se utiliza para modelar variables aleatorias con soporte en el intervalo $[0,1]$. Su función de densidad se parece a la beta, pero su expresión matemática resulta ser de cómputo más sencillo. Dicha función es:
 
 
 \begin{center}
@@ -189,7 +239,7 @@ ggplot(data_kuma) + geom_line(aes(x = x, y = y, color = color)) + scale_color_di
 Es una función sencilla donde su forma de densidad resulta muy flexible al variar a y b, por lo que se puede usar fácilmente para la representación de la probabilidad a *priori* de parámetros que esten entre 0 y 1.
 
 Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones de la distribución de Kumaraswamy con $a = 6$ y $b = 2$.
-Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores y para obtener el primer valor de la cadena se genera aleatoriamente con igual probabilidad un punto entre 0 y 1 .
+Se utiliza una distribución beta reparametrizada en su media y su concentración para proponer los nuevos valores y para obtener el primer valor de la cadena, se genera aleatoriamente con igual probabilidad un punto entre 0 y 1 .
 
 Se usan tres valores de concentración diferentes para evaluar la eficiencia del método.
 
@@ -339,6 +389,8 @@ Las tres cadenas convergen a la misma distribución y la cantidad de rezagos que
 
 
 \newpage
+Se calculan varias estidisticas descriptivas para cada una de las cadenas, con el objetivo de comparar que tanto difieren.
+
 \begin{table}[h!]
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
@@ -363,7 +415,7 @@ $${\displaystyle \operatorname {logit} (X)=\log \left({\frac {X}{1-X}}\right)=\l
 
 
 
-Todas las medidas descriptivas de X son parecidas para las distintas cadenas generadas, pero si se le aplica la transformación *logit* a X esas diferencias mínimas se agrandan un poco.
+Todas las medidas descriptivas de X son parecidas para las distintas cadenas generadas, pero si se le aplica la transformación *logit* a X esas diferencias mínimas se agrandan un poco, afectando en mayor medida a los percentiles.
 
 
 
@@ -381,7 +433,7 @@ Todas las medidas descriptivas de X son parecidas para las distintas cadenas gen
 
 # Aplicación de Metropolis-Hastings en dos dimensiones
 
-La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multivariadias. Igual que la situación anterior, no es necesario que las funciones que se quieren muestrear esten normalizadas. Se presentan dos situaciones en las que se puede aplicar la técnica. La primera, un ejemplo simple donde se obtienen muestras de la distribución normal bivariada donde este método funciona bien y la segunda, una función difícil de obtener muestras válidas en donde se pueden ver las fallas de Metropolis-Hastings.
+La verdadera utilidad del método presentado anteriormente se encuentra en la extracción de muestras de distribuciones multivariadias. Igual que la situación anterior, no es necesario que las funciones que se quieren muestrear esten normalizadas. Se presentan dos situaciones en las que se puede aplicar la técnica. La primera, un ejemplo simple donde se obtienen muestras de una distribución normal bivariada donde este método funciona bien y la segunda, una función difícil de obtener muestras válidas en donde se pueden ver las fallas de Metropolis-Hastings.
 
 Para realizar estas muestras, no sirve la función presentada en la primera parte del informe. Por eso se tiene la necesidad de modificar dicha función.
 
@@ -393,8 +445,7 @@ Para realizar estas muestras, no sirve la función presentada en la primera part
 
 # n: Tamaño de la cadena que se quiere generar
 
-# p_inicial: Primer punto con el que se inicial la cadena. Es igual a 0 por
-# defecto.
+# p_inicial: Primer punto con el que se inicia la cadena.
 
 # d_objetivo: Función que calcule la densidad de la función que se quiere
 # muestrear.
@@ -477,14 +528,19 @@ p_gen_2d = function(result, p_actual, p_nuevo) {
 La distribución a muestrear en este caso será una normal bivariada.
 
 $$
+\begin{array}{lrrr}
 p(\boldsymbol{x} \mid \boldsymbol{\mu}, \boldsymbol{\Sigma}) =
     \frac{1}{(2\pi)^{k/2} |\boldsymbol{\Sigma}|^{1/2}}
-    \exp\left(-\frac{1}{2} (\boldsymbol{x} - \boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\boldsymbol{x} - \boldsymbol{\mu})\right)
+    \exp\left(-\frac{1}{2} (\boldsymbol{x} - \boldsymbol{\mu})^T \boldsymbol{\Sigma}^{-1} (\boldsymbol{x} - \boldsymbol{\mu})\right) & con & x = \begin{bmatrix} x1 \\ x2 \\ \end{bmatrix}
+\end{array}
 $$
 
 Donde $\mu$ es el vector de esperanzas y $\Sigma$ la matrix de varianzas y covarianzas.
 
-Se controla que tan buenas son las muestras obtenidas a través de la evaluación de la cadena generada por el método y de qué tanto se asimilan las probabilidades estimadas por la distribución muestral obtenida a las reales. La normal bivariada de interés viene dada por los siguientes parámetros.
+Se controla que tan buenas son las muestras obtenidas a través de la evaluación de la cadena generada por el método y qué tan similares son las probabilidades estimadas por la distribución muestral obtenida a las reales.
+
+\newpage
+La normal bivariada de interés viene dada por los siguientes parámetros.
 
 
 $$
@@ -509,10 +565,9 @@ ggplot(grid, aes(x = x, y = y, z = density)) +
   geom_contour_filled() +
   labs(title = "",
        x = "X1",
-       y = "X2",
+       y = "X2", fill = "Densidad",
        z = "Densidad") +
   theme_minimal() +
-  theme(legend.position = "none") +
   coord_fixed(ratio = 1)
 
 ```
@@ -522,7 +577,7 @@ ggplot(grid, aes(x = x, y = y, z = density)) +
 
 
 
-Usando la función de Metropolis-Hastings se obtiene un muestra de 5000 observaciones. Para obtener las muestras, primero se debe seleccionar la matriz de covarianzas de la distribución de salto. Esto se logra evaluando el número de muestras efectivas de las dos dimensiones de las muestras generadas por separado, variando los valores en la matriz y quedandose con la que tenga el mayor número de muestras efectivas totales.
+Usando la función de Metropolis-Hastings se quiere obtener un muestra de 5000 observaciones. Para obtener la muestra, primero se debe seleccionar la matriz de covarianzas de la distribución de salto. Esto se logra evaluando el número de muestras efectivas de las dos dimensiones de las muestras generadas por separado, variando los valores en la matriz y quedandose con la que tenga el mayor número de muestras efectivas totales.
 
 El cálculo realizado es: 
 
@@ -531,11 +586,28 @@ Donde $S$ es el número de unidades generadas en la cadena, $ACF(k)$ la autocorr
 
 
 ```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
-#poner cálculo
-var = matrix(0,nrow = 85, ncol = 3)
-var[85,] = c(1.85, 2.15, 0.5)
-```
+var1 = seq(.85,1.85, by =.25)
+var2 = seq(1.9, 2.9, by =.25)
+cova = seq(.2, .6, by = .1)
+var = expand.grid(var1, var2, cova)
 
+d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
+
+
+nef_cova = matrix(0,nrow = nrow(var), ncol = 2)
+for (i in 1:nrow(var)) {
+  set.seed(69)
+  muestra_normal = sample_mh_2d(1000, p_inicial = c(.4, .75), d_objetivo = d_objetivo_normal,
+                                matrix_var = matrix(c(var[i,1], var[i,3], var[i,3],
+                                                      var[i,2]), nrow = 2, ncol = 2))
+  nef_cova[i,] = apply(muestra_normal, 2, FUN = neef)
+}
+
+mayor_cova = which.max(nef_cova[,1]+nef_cova[,2])
+
+
+```
+\newpage
 Los valores de la matriz de varianza evaluados son:
 
 $$
@@ -546,11 +618,11 @@ $$
 \end{array}
 $$
 
-La combinación de dichos valores con el mayor número de muestras efectivas totales es `r var[85,1]`, `r var[85,2]` y `r var[85,3]` para $\sigma_1^2$, $\sigma_2^2$ y $\sigma_{12}$ respectivamente.
+La combinación de dichos valores con el mayor número de muestras efectivas totales es `r var[mayor_cova,1]`, `r var[mayor_cova,2]` y `r var[mayor_cova,3]` para $\sigma_1^2$, $\sigma_2^2$ y $\sigma_{12}$ respectivamente. Entonces se utilizan dichos parámetros para generar la muestra de 5000 observaciones.
 
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas con distintas matrices de covarianzas"}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas de la normal bivariada generadas", fig.width = 10, fig.height = 4}
 set.seed(69)
 
 d_objetivo_normal = function (x) dmvnorm(x, mean = c(.4, .75), sigma = matrix(c(1.35, .4, .4, 2.4), nrow = 2))
@@ -566,10 +638,10 @@ ggplot(muestra_normal_df) + geom_line(aes(x = orden, y = obs)) + facet_grid(vars
   scale_y_continuous(name = "X")
 
 
-
 nef_norm = apply(muestra_normal, 2, FUN = neef)
 ```
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación de las cadenas con distinta matriz de covarianzas"}
+
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación de las cadenas de la normal bivariada generada", fig.width = 10, fig.height = 4}
 acf_norm1 = acf(muestra_normal[,1], lag.max = Inf, plot = F)
 acf_norm2 = acf(muestra_normal[,2], lag.max = Inf, plot = F)
 
@@ -579,15 +651,15 @@ acf_norm = data.frame(ACF = c(acf_norm1$acf[1:lag_norm], acf_norm2$acf[1:lag_nor
 
 
 
-ggplot(acf_norm) + geom_line(aes(x = Rezago, y = ACF, color = Dim)) +
+ggplot(acf_norm) + geom_line(aes(x = Rezago, y = ACF)) +
 facet_wrap(~Dim)  +
 geom_point(aes(x = Rezago, y = ACF)) + geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
 geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
-  scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1")) + 
+  scale_color_discrete(guide = "none", labels = c("1", "5", "10")) + 
   tema
 ```
-Las cadenas en la figura x se ven relativamenta aleatorias y parece recorrer el soporte de la función objetivo, que es indicio de una autocorrelación baja entre las observación generadas. Esto se aprecia en la figura x+1, donde la autocorrelación de ambas cadenas disminuye rápidamente al aumentar el rezago.
-El número de muestras efectivas para $x_1$ y $x_2$ es `r nef_norm[1]` y `r nef_norm[2]` respectivamente. Estos son valores relativamente grandes, que dan una imagen positiva de la calidad de la muestra generada.
+Las cadenas en la figura 6 se ven relativamenta aleatorias y parece recorrer el soporte de la función objetivo, que es indicio de una autocorrelación baja entre las observación generadas. Esto se aprecia en la figura 7, donde la autocorrelación de ambas cadenas disminuye rápidamente al aumentar el rezago.
+El número de muestras efectivas para $x_1$ y $x_2$ es `r round(nef_norm[1],0)` y `r round(nef_norm[2])` respectivamente. Estos son valores relativamente grandes, que dan una imagen positiva de la calidad de la muestra generada.
 
 
 ```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
@@ -605,7 +677,19 @@ Error1 = round(abs(Prob_mh_norm_1 - Prob_rmv_1)/Prob_rmv_1, 4)
 Error2 = round(abs(Prob_mh_norm_2 - Prob_rmv_2)/Prob_rmv_2, 4)
 Error3 = round(abs(Prob_mh_norm_3 - Prob_rmv_3)/Prob_rmv_3, 4)
 ```
-Se calculan tres probabilidades usando las muestras generadas y se comparan con las reales para ver que tan precisas son.
+
+Se estima la distribución de la normal bivariada con los valores de las dos cadenas.
+
+```{r echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Distribución estimada de la normal bivariada"}
+ggplot(data.frame(muestra_normal), aes(x = X1, y = X2)) +
+  stat_density2d(geom = "raster",
+        aes(fill = after_stat(density)),
+        contour = FALSE) +scale_fill_viridis_c(name = "Densidad")
+```
+
+La distribución estimada de la figura 8 es similar a la verdadera distribución de la normal propuesta.
+
+Se calculan tres probabilidades usando las muestras y se comparan con las reales para ver que tan precisas son.
 
 
 \begin{table}[h!]
@@ -648,7 +732,7 @@ $$
 p^*(x_1, x_2 \mid a, b) = \exp \left\{-\left[(a - x_1) ^ 2 + b(x_2 - x_1^2) ^ 2\right] \right\}
 $$
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 7, fig.cap = "Distribución de la p* con a = 0.5 y b = 0.5"}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 7, fig.cap = "Distribución de p* con a = 0.5 y b = 5"}
 x <- seq(-1.5, 2.1, length.out = 100)
 y <- seq(-1, 4.25, length.out = 100)
 grid <- expand.grid(x = x, y = y)
@@ -659,7 +743,7 @@ grid$density <- d_objetivo_rosenbrock(grid)
 
 ggplot(grid, aes(x = x, y = y, z = density$x)) +
   geom_contour_filled() +
-  labs(title = "", fill = "",
+  labs(title = "", fill = "Densidad",
        x = "X1",
        y = "X2",
        z = "Densidad") +
@@ -689,7 +773,7 @@ $\sigma_{12}$ & 0.7       & 0.3       & 0  \\ \hline
 \end{table}
 
 
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas con distintas matrices de covarianzas"}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Cadenas generadas de la muestra 1 y 2"}
 rosenbrock = function (x) ((.5 - x(1))^2) + 5 * ((x(2) - (x(1)^2))^2)
 
 d_objetivo_rosenbrock = function (x) exp((-1)*(((.5 - x[1])^2) + 5 * ((x[2] - (x[1]^2))^2)))
@@ -724,11 +808,11 @@ muestra_rosenbrock_df = rbind(muestra_rosenbrock_df_1, muestra_rosenbrock_df_2)
 
 
 ggplot(muestra_rosenbrock_df) + geom_line(aes(x = orden, y = obs)) + 
-  facet_wrap(~cadena + sigma, ncol = 2) + scale_x_continuous(name = "Observación") + scale_y_continuous(name = "X")
+  facet_wrap(~sigma+cadena, nrow = 2) + scale_x_continuous(name = "Observación") + scale_y_continuous(name = "X")
 
 
 
-```
+  ```
 
 
 
@@ -737,16 +821,17 @@ ggplot(muestra_rosenbrock_df) + geom_line(aes(x = orden, y = obs)) +
 nef_rosenbrock_1 = apply(muestra_rosenbrock_1, 2, FUN = neef)
 nef_rosenbrock_2 = apply(muestra_rosenbrock_2, 2, FUN = neef)
 nef_rosenbrock_3 = apply(muestra_rosenbrock_3, 2, FUN = neef)
+tasa_rosenbrock_1 = 1-mean(muestra_rosenbrock_1[1:999]-muestra_rosenbrock_1[2:1000] == 0)
+tasa_rosenbrock_2 = 1-mean(muestra_rosenbrock_2[1:999]-muestra_rosenbrock_2[2:1000] == 0)
 ```
 
 
-En comparación con la figura x del caso Normal bivariado, se puede notar que las cadenas de la figura x tienen una tasa de aceptación menor, generando más estancamientos en un valor y menos picos. Además, el número efectivo de muestras es menor.
+En comparación con la figura 6 del caso normal bivariado, se puede notar que las cadenas de la figura 10 tienen una tasa de aceptación menor, siendo `r round(tasa_rosenbrock_1,3)` y `r round(tasa_rosenbrock_2,3)` para la muestra 1 y 2 respectivamente. Hay más estancamientos en un mismo valor y menos picos.
 
 
 
 
-
-```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación según la muestra"}
+```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Autocorrelación de las cadenas generadas de la funcion para cada muestra"}
 tasa_rosen_1 = 1-mean(muestra_rosenbrock_1[1:999,]-muestra_rosenbrock_1[2:1000,] == 0)
 tasa_rosen_2 = 1-mean(muestra_rosenbrock_2[1:999,]-muestra_rosenbrock_2[2:1000,] == 0)
 tasa_rosen_3 = 1-mean(muestra_rosenbrock_3[1:999,]-muestra_rosenbrock_3[2:1000,] == 0)
@@ -779,14 +864,10 @@ geom_point(aes(x = Rezago, y = ACF), size = .1) + geom_hline(yintercept = 0) + g
 geom_hline(yintercept =0.05, linetype = "dashed", color = "blue") + geom_hline(yintercept = -0.05, linetype = "dashed", color = "blue") +
   scale_color_discrete(guide = "none", labels = c("1", "5", "10"), type = c("slateblue2", "salmon1","seagreen2")) +
   tema
-
-
-
 ```
 
 
-En la figura x, todas las cadenas bajan lentamente hasta tener una autocorrelación despreciable, pero la segunda lo hace de forma más rápida.  
-
+En la figura 11, todas las cadenas bajan lentamente hasta tener una autocorrelación despreciable, pero la segunda lo hace de forma más rápida.  
 
 
 \begin{table}[h!]
@@ -805,7 +886,9 @@ X2 & `r nef_rosenbrock_1[2]`& `r nef_rosenbrock_2[2]` & `r nef_rosenbrock_3[2]`
 \end{table}
 
 
-El número de muestras efectivas para cada cadena es bajo. Esto tiene sentido, al ver los resultados de la figura x y x.
+
+
+El número de muestras efectivas para cada cadena es bajo. Esto tiene sentido, al ver los resultados de la figura 10 y 11.
 ```{r, echo = FALSE, error = FALSE, message = FALSE, warning = FALSE}
 Prob_mh_rosen_1 = mean(muestra_rosenbrock_1[, 1] < 1 & muestra_rosenbrock_1[, 1] > 0 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
 Prob_mh_rosen_2 = mean(muestra_rosenbrock_1[, 1] < 0 & muestra_rosenbrock_1[, 1] > -1 & muestra_rosenbrock_1[, 2] > 0 & muestra_rosenbrock_1[, 2] < 1)
@@ -826,10 +909,19 @@ error_2_rosen =abs(Prob_mh_rosen_2 - Prob_int_2)/Prob_int_2
 error_3_rosen =abs(Prob_mh_rosen_3 - Prob_int_3)/Prob_int_3
 ```
 
+Se estima la distribución de la $p^*$ con los valores de las cadenas de la segunda muestra.
 
-Se calculan tres probabilidades usando las muestras generadas y se comparan con las reales para ver que tan precisas son.
+```{r echo = FALSE, error = FALSE, message = FALSE, warning = FALSE, fig.cap = "Distribución estimada de la función"}
+ggplot(data.frame(muestra_rosenbrock_2), aes(x = X1, y = X2))+ 
+  stat_density2d(geom = "raster",
+        aes(fill = after_stat(density)),
+        contour = FALSE) +scale_fill_viridis_c(name = "Densidad") + theme_minimal()
+```
+La distribución estimada de la figura 12 tiene una similitud en forma con la verdadera distribución $p^*$ pero no parece representarla en su totalidad.
 
+Ademas, con los mismos datos, se calculan tres probabilidades y se comparan con las reales para ver que tan precisas son.
 
+\newpage
 \begin{table}[h!]
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
@@ -848,17 +940,18 @@ $\mathrm{Pr}(1 < X_1 < 2, 2 < X_2 < 3)$ & `r Prob_mh_rosen_3`  & `r round(Prob_i
 \end{center}
 \end{table}
 
-Los errores relativos de la tabla 7 son muy grande, por lo que da un indicio de lo mala que es la estimación de la probabilidad. Por esto, y todo lo comentado anteriormente, es razonable pensar que la distribución de las muestras generadas por Metropolis-Hastings difieren en gran medida de la verdadera distribución¨de $p*$.
+Los errores relativos de la tabla 7 son muy grande, por lo que da un indicio de lo mala que es la estimación de la probabilidad. Por esto, y todo lo comentado anteriormente, es razonable pensar que la distribución de las muestras generadas por Metropolis-Hastings difieren en gran medida de la verdadera distribución de $p*$.
 
 
 # Conclusiones 
 
 
-Metropolis-Hastings es un método útil en ciertas ocasiones. Es simple, facil de programar y entender, y además se sabe que cuando el número de muestras tiende a infinito, la distribución de probabilidad de la secuencia tiende a la verdadera función objetivo, pero en casos donde la función de densidad de la distribución sea compleja es poco preciso. Para obtener una muestra con buena representatividad, es decir, que haya explorado el rango completo de la distribución, se requerira una muestra de tamaño grande. Entonces, el método no sera de utilidad al requerir tantas iteraciones para llegar a un resultado aceptable. Además, al aumentar la dimensión se incrementa el tiempo que le toma a la computadora realizar los cálculos. Esto, combinado con el hecho de que hay métodos más eficientes hace a Metropolis-Hastings un método no recomendado. 
+Metropolis-Hastings es un método útil en ciertas ocasiones. Es simple, facil de programar y entender, y además se sabe que cuando el número de muestras tiende a infinito, la distribución de probabilidad de la secuencia tiende a la verdadera función objetivo, pero en casos donde la función de densidad de la distribución sea compleja es poco preciso. Para obtener una muestra con buena representatividad, es decir, que haya explorado el rango completo de la distribución, se requerira una muestra de tamaño grande. Entonces, el método no sera de utilidad al requerir tantas iteraciones para llegar a un resultado aceptable. Además, al aumentar la dimensión se incrementa el tiempo que le toma a la computadora realizar los cálculos. Esto, combinado con el hecho de que hay métodos más eficientes hace a Metropolis-Hastings una técnica no recomendada. 
 Para obtener muestras de una función de densidad, es preferible el uso de otros métodos como Hamiltonian-Montecarlo.
 
+\newpage
+# Anexo
 
+En el siguiente repositorio, se encuntran los codigos utilizados para este informe. 
 
-
-
-
+https://github.com/TomasAnderson0/TP2_Bayes
